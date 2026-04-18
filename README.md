@@ -30,6 +30,9 @@ Spreadsheets mix data with layout. No semantic markup to guide a parser:
 - Existing tools extract flat cell grids — fine for humans, but they lose the structure LLMs need
 - Raw XLSX wastes tokens, hits context limits, and forces the model to guess
 
+**The real goal isn't parsing — it's AI comprehension.**
+Success is measured by whether an LLM can correctly answer questions about the data.
+
 ## Philosophy
 
 ### 1. Designed to be verified, not just claimed
@@ -52,15 +55,12 @@ The verification loop **parse → ask AI → measure → improve** runs on every
   <img src="docs/images/pipeline.svg" alt="Pipeline" width="100%">
 </p>
 
-**The real goal isn't parsing — it's AI comprehension.**
-Success is measured by whether an LLM can correctly answer questions about the data.
-
-And Excel doesn't have one right answer.
+Excel doesn't have one right answer.
 A financial report, a multi-table schedule, and a scattered data export each reward different heuristics.
 
-Instead of hiding that, every axis — input pipeline *and* output format — is an interface you can swap.
+Every axis — input pipeline *and* output format — is an interface you can swap.
 
-- **Four pre-built strategies** — `balanced` (default) plus `complex` / `structural` / `scattered` for multi-level merged headers, sparse data islands, and similar patterns.
+- **Four pre-built strategies** — `balanced` (default) plus `complex` / `structural` / `scattered`.
 - **Experimental axes** — marked `@ExperimentalRead4ai`; opt-in is explicit.
 
 > Custom strategies plug in without forking the library. [Compose your own](docs/guide.md)
