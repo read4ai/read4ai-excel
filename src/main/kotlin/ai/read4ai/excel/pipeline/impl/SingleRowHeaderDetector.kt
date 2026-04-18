@@ -1,0 +1,30 @@
+package ai.read4ai.excel.pipeline.impl
+
+import ai.read4ai.excel.pipeline.HeaderDetector
+import ai.read4ai.excel.pipeline.HeaderInfo
+import ai.read4ai.excel.pipeline.Segment
+
+/**
+ * Default [HeaderDetector] that treats the first non-empty row as the single header row.
+ *
+ * This reproduces the existing ExcelParser behavior (headerRowCount=1).
+ */
+class SingleRowHeaderDetector : HeaderDetector {
+
+    override fun detectHeaders(segment: Segment): HeaderInfo {
+        val cells = segment.grid.cells
+        if (cells.isEmpty()) {
+            return HeaderInfo(headerRowCount = 0, headerRows = emptyList())
+        }
+
+        val firstNonEmpty = cells.firstOrNull { row -> row.any { it.isNotBlank() } }
+        return if (firstNonEmpty != null) {
+            HeaderInfo(
+                headerRowCount = 1,
+                headerRows = listOf(firstNonEmpty),
+            )
+        } else {
+            HeaderInfo(headerRowCount = 0, headerRows = emptyList())
+        }
+    }
+}
