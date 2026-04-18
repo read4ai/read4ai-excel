@@ -2,25 +2,16 @@
 
 ## v0 — Foundation (experimental)
 
-### v0.3.x — Code stabilization
+### v0.1.x — Initial release
 
-- Public API minimized, internal visibility enforced
-- Pipeline simplified: Strategy + Format
-- Java 17+ support with Multi-Release JAR
-
-### v0.2.x — Language awareness + quality improvements
-
-- Language detection (KO/EN/JA) with assist prompt utility
-- Smarter DeferredBlockOrderer (section headers preserved)
-- Layout experiment (JSON > Markdown > HTML confirmed)
-- HierarchyAwareHeaderDetector (experimental)
-
-### v0.1.x — Pipeline design + benchmark loop
-
-- Composable pipeline with a tested default strategy (balanced)
-- Compact JSON + Markdown output
-- Merge region metadata in output (A1-range notation)
-- Continuous benchmark verification against golden set
+- Composable pipeline with interface-based steps (6 stages, user-swappable)
+- Default strategy `balanced` tested against a golden set
+- Output layer as interface (`DocumentWriter`) — users can plug in custom formats
+- JSON (compact / row-object) and Markdown writers out of the box
+- Merge region metadata, multi-level headers, hierarchy paths
+- Language detection (KO / EN / JA)
+- `@ExperimentalRead4ai` opt-in marker for unstable APIs
+- Java 25 baseline, virtual threads, pure Kotlin + Apache POI
 - [Live demo](https://huggingface.co/spaces/read4ai/read4ai) with Ask AI
 
 ---
