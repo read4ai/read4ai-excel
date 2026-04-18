@@ -69,7 +69,7 @@ Plug in the piece that fits — or inject a strategy tuned to your spreadsheets'
 
 ### 3. Designed to be dependable
 
-- **Java 25+** — requires Java 25 or newer; uses virtual threads natively
-- **Stable public API** — predictable interfaces that won't break between releases
-- **Minimal dependencies** — Kotlin + Apache POI. No frameworks, no magic
-- **AI-friendly repository** — all documentation in Markdown, ready for AI-assisted development
+- **Stable public API** — interfaces and models follow semantic versioning. Breaking changes bump the major version, not a silent release.
+- **Deterministic output** — same file + same strategy → same bytes. No hidden global state, no runtime magic.
+- **No framework lock-in** — plain Kotlin library. No Spring, no DI container, no annotation processors.
+- **AI-friendly repo** — docs in Markdown, code organized so AI agents can reason about it as easily as humans.
