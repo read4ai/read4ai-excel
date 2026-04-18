@@ -28,12 +28,9 @@ Fixture files are in [`fixtures/`](fixtures/).
 
 Latest: [v0.1.0](v0.1.0.md) (2026-04-18)
 
-| Parser            | Overall  |
-|-------------------|----------|
-| **read4ai-excel** | 🏆 **87.5%** |
-| SheetJS 0.20      | 83.6%    |
-| calamine 0.6      | 82.8%    |
-| pandas 3.0        | 82.0%    |
+|              | read4ai-excel v0.1.0 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
+|--------------|----------------------|------------|--------------|--------------|
+| GPT-5.4 mini | 🏆 **87.5%**         | 82.0%      | 83.6%        | 82.8%        |
 
 Evaluated on 25+ fixtures / 128+ questions with GPT-5.4 mini. See [v0.1.0.md](v0.1.0.md) for per-fixture Q&A and expected/actual answers.
 
