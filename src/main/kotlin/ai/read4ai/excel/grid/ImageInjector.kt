@@ -1,6 +1,6 @@
 package ai.read4ai.excel.grid
 
-import ai.read4ai.excel.Config
+import ai.read4ai.excel.ExcelConfig
 import ai.read4ai.excel.image.*
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.poi.hssf.usermodel.HSSFPatriarch
@@ -20,7 +20,7 @@ import javax.imageio.ImageIO
 import kotlin.math.roundToInt
 
 internal class ImageInjector(
-    private val config: Config = Config(),
+    private val config: ExcelConfig = ExcelConfig(),
 ) {
     private val log = KotlinLogging.logger {}
     private val imageSemaphore = Semaphore(config.maxConcurrentImageRequests)
@@ -51,7 +51,7 @@ internal class ImageInjector(
         gridContext: GridExtractionResult,
     ): List<List<String>> {
         val grid = gridContext.grid
-        if (config.imageOutput == Config.ImageOutput.SKIP) {
+        if (config.imageOutput == ExcelConfig.ImageOutput.SKIP) {
             return grid
         }
 
@@ -178,7 +178,7 @@ internal class ImageInjector(
 
         // Determine content for each picture based on image output mode
         val results: List<PictureResult> = when (config.imageOutput) {
-            Config.ImageOutput.BASE64 -> {
+            ExcelConfig.ImageOutput.BASE64 -> {
                 preparedPictures.map { prepared ->
                     PictureResult(
                         index = prepared.index,
@@ -190,7 +190,7 @@ internal class ImageInjector(
                 }
             }
 
-            Config.ImageOutput.HYBRID -> {
+            ExcelConfig.ImageOutput.HYBRID -> {
                 val hybridConfig = config.hybridConfig
                 if (hybridConfig == null) {
                     log.warn { "HYBRID mode but no hybridConfig provided, skipping images" }
@@ -221,7 +221,7 @@ internal class ImageInjector(
                 }
             }
 
-            Config.ImageOutput.SKIP -> return mutableGrid
+            ExcelConfig.ImageOutput.SKIP -> return mutableGrid
         }
 
         for (result in results) {

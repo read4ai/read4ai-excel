@@ -35,7 +35,7 @@ object ExcelParser {
     fun parse(
         bytes: ByteArray,
         fileName: String? = null,
-        config: Config = Config(),
+        config: ExcelConfig = ExcelConfig(),
         pipeline: PipelineConfig = PipelineConfig(),
     ): ExcelDocument {
         if (isCsvFile(fileName)) {
@@ -83,12 +83,12 @@ object ExcelParser {
         }
     }
 
-    /** @see parse(ByteArray, String?, Config, PipelineConfig) */
+    /** @see parse(ByteArray, String?, ExcelConfig, PipelineConfig) */
     @JvmStatic
     @JvmOverloads
     fun parse(
         path: Path,
-        config: Config = Config(),
+        config: ExcelConfig = ExcelConfig(),
         pipeline: PipelineConfig = PipelineConfig(),
     ): ExcelDocument {
         val fileName = path.fileName?.toString()
@@ -105,7 +105,7 @@ object ExcelParser {
         sheetIndex: Int,
         gridExtractor: ai.read4ai.excel.pipeline.GridExtractor,
         imageInjector: ImageInjector,
-        config: Config,
+        config: ExcelConfig,
         pipeline: PipelineConfig,
     ): Sheet {
         log.debug { "Processing sheet $sheetIndex: '${poiSheet.sheetName}'" }

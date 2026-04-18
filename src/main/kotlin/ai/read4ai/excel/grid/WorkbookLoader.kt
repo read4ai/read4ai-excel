@@ -1,6 +1,6 @@
 package ai.read4ai.excel.grid
 
-import ai.read4ai.excel.Config
+import ai.read4ai.excel.ExcelConfig
 import org.apache.poi.openxml4j.util.ZipSecureFile
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.ss.usermodel.WorkbookFactory
@@ -8,7 +8,7 @@ import org.apache.poi.util.IOUtils
 import java.io.ByteArrayInputStream
 
 internal class WorkbookLoader(
-    private val config: Config = Config(),
+    private val config: ExcelConfig = ExcelConfig(),
 ) {
 
     fun openWorkbook(excelBytes: ByteArray, useRelaxedZipSecurity: Boolean = true): Workbook {

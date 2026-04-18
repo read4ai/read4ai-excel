@@ -1,6 +1,6 @@
 package ai.read4ai.excel.pipeline
 
-import ai.read4ai.excel.Config
+import ai.read4ai.excel.ExcelConfig
 import org.apache.poi.ss.usermodel.Workbook
 
 /**
@@ -18,5 +18,5 @@ interface WorkbookReader {
      * @param config parsing configuration
      * @return the opened workbook (caller is responsible for closing)
      */
-    fun read(data: ByteArray, config: Config): Workbook
+    fun read(data: ByteArray, config: ExcelConfig): Workbook
 }

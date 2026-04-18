@@ -1,14 +1,14 @@
 package ai.read4ai.excel
 
 /**
- * Configuration for the Excel parser.
+ * Configuration for [ExcelParser].
  *
  * @property maxRecordSize maximum byte-array size for POI record handling (default 100 MB)
  * @property maxConcurrentImageRequests maximum parallel image processing requests
  * @property imageOutput how embedded images should be handled in the output
  * @property hybridConfig optional callback configuration for AI-assisted image description
  */
-data class Config(
+data class ExcelConfig(
     val maxRecordSize: Int = 100_000_000,
     val maxConcurrentImageRequests: Int = 16,
     val imageOutput: ImageOutput = ImageOutput.SKIP,

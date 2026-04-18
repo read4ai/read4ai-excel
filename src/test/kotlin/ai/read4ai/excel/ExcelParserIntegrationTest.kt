@@ -101,13 +101,13 @@ class ExcelParserIntegrationTest : FunSpec({
 
     test("parse with default config works") {
         val bytes = createSimpleXlsx()
-        val doc = ExcelParser.parse(bytes, config = Config())
+        val doc = ExcelParser.parse(bytes, config = ExcelConfig())
         doc.sheets.shouldNotBeEmpty()
     }
 
     test("parse with custom config works") {
         val bytes = createSimpleXlsx()
-        val doc = ExcelParser.parse(bytes, config = Config(imageOutput = Config.ImageOutput.SKIP))
+        val doc = ExcelParser.parse(bytes, config = ExcelConfig(imageOutput = ExcelConfig.ImageOutput.SKIP))
         doc.sheets.shouldNotBeEmpty()
     }
 

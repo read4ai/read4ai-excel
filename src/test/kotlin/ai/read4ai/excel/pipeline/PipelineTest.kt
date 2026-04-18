@@ -2,7 +2,7 @@
 
 package ai.read4ai.excel.pipeline
 
-import ai.read4ai.excel.Config
+import ai.read4ai.excel.ExcelConfig
 import ai.read4ai.excel.ExcelParser
 import ai.read4ai.excel.model.Element
 import ai.read4ai.excel.pipeline.impl.*

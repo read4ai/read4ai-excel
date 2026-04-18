@@ -1,6 +1,6 @@
 package ai.read4ai.excel.pipeline.impl
 
-import ai.read4ai.excel.Config
+import ai.read4ai.excel.ExcelConfig
 import ai.read4ai.excel.ExcelParseException
 import ai.read4ai.excel.grid.WorkbookLoader
 import ai.read4ai.excel.pipeline.WorkbookReader
@@ -14,7 +14,7 @@ import org.apache.poi.ss.usermodel.Workbook
  */
 class PoiWorkbookReader : WorkbookReader {
 
-    override fun read(data: ByteArray, config: Config): Workbook {
+    override fun read(data: ByteArray, config: ExcelConfig): Workbook {
         val loader = WorkbookLoader(config)
         return try {
             loader.openWorkbook(data, useRelaxedZipSecurity = true)
