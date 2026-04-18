@@ -7,9 +7,9 @@
 3. Check if the LLM's answer matches the verified consensus answer
 4. Score = % of correct answers
 
-> **Note:** the published fixtures below are a representative subset for transparency. The full golden set remains private and continues to grow.
+> **Note:** the published features below are a representative subset for transparency. The full golden set remains private and continues to grow.
 
-## Published fixtures
+## Published features
 
 Fixture files are in [`fixtures/`](fixtures/).
 
@@ -34,10 +34,10 @@ Latest: [v0.1.0](v0.1.0.md) (2026-04-18)
 |--------------|----------------------|------------|--------------|--------------|
 | GPT-5.4 mini | 🏆 **88.3%**         | 82.0%      | 84.4%        | 82.8%        |
 
-Evaluated on 25+ fixtures / 128+ questions with GPT-5.4 mini. See [v0.1.0.md](v0.1.0.md) for per-fixture Q&A and expected/actual answers.
+Evaluated on 25+ fixtures / 128+ questions with GPT-5.4 mini. See [v0.1.0.md](v0.1.0.md) for per-feature Q&A and expected/actual answers.
 
 ## Submit your golden set
 
-Have a tricky Excel file? Submit your file, a question, and the expected answer. Submitted fixtures and Q&A will be **fully published** in the benchmark.
+Have a tricky Excel file? Submit your file, a question, and the expected answer. Submitted features and Q&A will be **fully published** in the benchmark.
 
 Contact: [GitHub](https://github.com/Hyune-c) · [LinkedIn](https://www.linkedin.com/in/b30b971a0/)
