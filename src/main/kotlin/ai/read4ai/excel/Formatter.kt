@@ -1,16 +1,16 @@
 package ai.read4ai.excel
 
 import ai.read4ai.excel.model.ExcelDocument
+import ai.read4ai.excel.output.JsonFormatter
 import ai.read4ai.excel.output.JsonLayout
-import ai.read4ai.excel.output.JsonWriter
-import ai.read4ai.excel.output.MarkdownWriter
+import ai.read4ai.excel.output.MarkdownFormatter
 
 /**
  * Convenience facade for converting an [ExcelDocument] to AI-friendly text.
  *
- * Delegates to [JsonWriter] and [MarkdownWriter] which implement the
- * [ai.read4ai.excel.output.DocumentWriter] interface. For full control, use
- * the writers directly.
+ * Delegates to [JsonFormatter] and [MarkdownFormatter] which implement the
+ * [ai.read4ai.excel.output.DocumentFormatter] interface. For full control,
+ * use the formatters directly.
  */
 object Formatter {
 
@@ -19,10 +19,10 @@ object Formatter {
     @JvmOverloads
     @OptIn(ExperimentalRead4ai::class)
     fun toJson(document: ExcelDocument, layout: JsonLayout = JsonLayout.COMPACT): String =
-        JsonWriter(layout).write(document)
+        JsonFormatter(layout).format(document)
 
     /** Markdown pipe tables with row indices and merge annotations. */
     @JvmStatic
     fun toMarkdown(document: ExcelDocument): String =
-        MarkdownWriter().write(document)
+        MarkdownFormatter().format(document)
 }

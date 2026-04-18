@@ -6,7 +6,7 @@ import ai.read4ai.excel.model.MergeRegionInfo
 import ai.read4ai.excel.model.Sheet
 
 /**
- * Converts an [ExcelDocument] to Markdown pipe-table format.
+ * Formats an [ExcelDocument] as Markdown (pipe-table format).
  *
  * Features:
  * - Row indices (1-based absolute)
@@ -17,14 +17,14 @@ import ai.read4ai.excel.model.Sheet
  * Example:
  * ```kotlin
  * val doc = ExcelParser.parse(bytes)
- * val md = MarkdownWriter().write(doc)
+ * val md = MarkdownFormatter().format(doc)
  * ```
  *
- * @see DocumentWriter
+ * @see DocumentFormatter
  */
-class MarkdownWriter : DocumentWriter {
+class MarkdownFormatter : DocumentFormatter {
 
-    override fun write(document: ExcelDocument): String = toMarkdown(document)
+    override fun format(document: ExcelDocument): String = toMarkdown(document)
 
     /**
      * Convert an entire [ExcelDocument] to Markdown.

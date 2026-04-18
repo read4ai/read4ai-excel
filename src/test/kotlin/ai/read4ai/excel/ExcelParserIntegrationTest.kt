@@ -1,8 +1,8 @@
 package ai.read4ai.excel
 
 import ai.read4ai.excel.model.Element
-import ai.read4ai.excel.output.JsonWriter
-import ai.read4ai.excel.output.MarkdownWriter
+import ai.read4ai.excel.output.JsonFormatter
+import ai.read4ai.excel.output.MarkdownFormatter
 import ai.read4ai.excel.pipeline.PipelineConfig
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
@@ -76,21 +76,21 @@ class ExcelParserIntegrationTest : FunSpec({
     test("JSON output is valid and contains expected content") {
         val bytes = createSimpleXlsx()
         val doc = ExcelParser.parse(bytes, fileName = "test.xlsx")
-        val json = JsonWriter.toRawJson(doc)
+        val json = JsonFormatter.toRawJson(doc)
 
         json.shouldNotBeBlank()
         json shouldContain "TestSheet"
         json shouldContain "Alice"
 
         // Verify it can be deserialized back
-        val roundTripped = JsonWriter.fromJson(json)
+        val roundTripped = JsonFormatter.fromJson(json)
         roundTripped.numberOfSheets shouldBe doc.numberOfSheets
     }
 
     test("Markdown output is valid and contains expected content") {
         val bytes = createSimpleXlsx()
         val doc = ExcelParser.parse(bytes, fileName = "report.xlsx")
-        val md = MarkdownWriter().toMarkdown(doc)
+        val md = MarkdownFormatter().toMarkdown(doc)
 
         md.shouldNotBeBlank()
         md shouldNotContain "# report.xlsx"
@@ -196,10 +196,10 @@ class ExcelParserIntegrationTest : FunSpec({
     test("complex XLSX JSON output is valid and round-trips") {
         val bytes = createComplexXlsx()
         val doc = ExcelParser.parse(bytes, fileName = "complex.xlsx")
-        val json = JsonWriter.toRawJson(doc)
+        val json = JsonFormatter.toRawJson(doc)
 
         json.shouldNotBeBlank()
-        val roundTripped = JsonWriter.fromJson(json)
+        val roundTripped = JsonFormatter.fromJson(json)
         roundTripped.numberOfSheets shouldBe 1
         roundTripped.sheets[0].elements.shouldNotBeEmpty()
     }
@@ -207,7 +207,7 @@ class ExcelParserIntegrationTest : FunSpec({
     test("complex XLSX markdown output contains both tables") {
         val bytes = createComplexXlsx()
         val doc = ExcelParser.parse(bytes, fileName = "complex.xlsx")
-        val md = MarkdownWriter().toMarkdown(doc)
+        val md = MarkdownFormatter().toMarkdown(doc)
 
         md.shouldNotBeBlank()
         md shouldContain "Revenue"
@@ -270,7 +270,7 @@ class ExcelParserIntegrationTest : FunSpec({
     test("multi-sheet markdown includes both sheet sections") {
         val bytes = createMultiSheetXlsx()
         val doc = ExcelParser.parse(bytes)
-        val md = MarkdownWriter().toMarkdown(doc)
+        val md = MarkdownFormatter().toMarkdown(doc)
 
         md shouldContain "## Overview"
         md shouldContain "## Details"

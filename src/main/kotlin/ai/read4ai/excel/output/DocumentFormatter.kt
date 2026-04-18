@@ -7,16 +7,16 @@ import ai.read4ai.excel.model.ExcelDocument
  *
  * Implementations are the output counterpart to the pipeline interfaces:
  * while `Segmenter`, `HeaderDetector`, etc. control how Excel is *parsed*,
- * `DocumentWriter` controls how the parsed result is *serialized*.
+ * `DocumentFormatter` controls how the parsed result is *rendered*.
  *
  * Built-in implementations:
- * - [JsonWriter] — compact or row-object JSON
- * - [MarkdownWriter] — pipe-table Markdown
+ * - [JsonFormatter] — compact or row-object JSON
+ * - [MarkdownFormatter] — pipe-table Markdown
  *
- * Example custom writer:
+ * Example custom formatter:
  * ```kotlin
- * class CsvWriter : DocumentWriter {
- *     override fun write(document: ExcelDocument): String = buildString {
+ * class CsvFormatter : DocumentFormatter {
+ *     override fun format(document: ExcelDocument): String = buildString {
  *         document.sheets.flatMap { it.elements }
  *             .filterIsInstance<Element.Table>()
  *             .forEach { table -> /* ... */ }
@@ -24,6 +24,6 @@ import ai.read4ai.excel.model.ExcelDocument
  * }
  * ```
  */
-interface DocumentWriter {
-    fun write(document: ExcelDocument): String
+interface DocumentFormatter {
+    fun format(document: ExcelDocument): String
 }

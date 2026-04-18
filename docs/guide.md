@@ -114,7 +114,7 @@ _[merged RxC] = spans R rows × C columns_
 
 Excel doesn't have a single right parser. A financial report, a scattered data export, and a report with merged headers each reward different heuristics. Instead of forcing one algorithm, read4ai-excel exposes the parsing pipeline as **interfaces** you can swap.
 
-`PipelineConfig` holds six input-stage interfaces and `DocumentWriter` covers output. Strategies are just pre-built combinations — no magic, just convenience.
+`PipelineConfig` holds six input-stage interfaces and `DocumentFormatter` covers output. Strategies are just pre-built combinations — no magic, just convenience.
 
 ### Strategies (pre-built combinations)
 
@@ -145,40 +145,40 @@ val doc = ExcelParser.parse(path, pipeline = PipelineConfig.Strategy.complex())
 
 ### Pipeline axes (6 interfaces)
 
-All six input stages are interfaces. Implement one and pass it to `PipelineConfig`. **Bold** = balanced default. `(1 impl)` = shipped with a single implementation today; the interface is open for your own.
+All six input stages are interfaces. Implement one and pass it to `PipelineConfig`. **Bold** = balanced default.
 
 | Axis | Interface | Options |
 |------|-----------|---------|
-| 1. Workbook read | `WorkbookReader` | **PoiWorkbookReader** `(1 impl)` |
-| 2. Grid extraction | `GridExtractor` | **DefaultGridExtractor** `(1 impl)` |
+| 1. Workbook read | `WorkbookReader` | **PoiWorkbookReader** |
+| 2. Grid extraction | `GridExtractor` | **DefaultGridExtractor** |
 | 3. Segmentation | `Segmenter` | **GraphSegmenter**, ThreeLevelSegmenter, SimpleSegmenter |
 | 4. Header detection | `HeaderDetector` | **MergeAwareHeaderDetector**, HierarchyAwareHeaderDetector, SingleRowHeaderDetector |
 | 5. Block ordering | `BlockOrderer` | **DeferredBlockOrderer**, SequentialBlockOrderer |
-| 6. Element classification | `ElementClassifier` | **DefaultElementClassifier** `(1 impl)` |
+| 6. Element classification | `ElementClassifier` | **DefaultElementClassifier** |
 
-### Output: DocumentWriter
+### Output: DocumentFormatter
 
-Output is also an interface. Two built-in writers plus your own:
+Output is also an interface. Two built-in formatters plus your own:
 
 ```kotlin
 import ai.read4ai.excel.output.*
 
 val doc = ExcelParser.parse(path)
 
-// Built-in writers
-val compact: String = JsonWriter().write(doc)                            // COMPACT (default)
-val rowObject: String = JsonWriter(JsonLayout.ROW_OBJECT).write(doc)     // ROW_OBJECT (experimental)
-val md: String = MarkdownWriter().write(doc)
+// Built-in formatters
+val compact: String = JsonFormatter().format(doc)                            // COMPACT (default)
+val rowObject: String = JsonFormatter(JsonLayout.ROW_OBJECT).format(doc)     // ROW_OBJECT (experimental)
+val md: String = MarkdownFormatter().format(doc)
 
 // Or use the Formatter facade (same result)
 val json = Formatter.toJson(doc)
 ```
 
-To add your own format, implement `DocumentWriter`:
+To add your own format, implement `DocumentFormatter`:
 
 ```kotlin
-class CsvRowsWriter : DocumentWriter {
-    override fun write(document: ExcelDocument): String = buildString {
+class CsvRowsFormatter : DocumentFormatter {
+    override fun format(document: ExcelDocument): String = buildString {
         document.sheets.flatMap { it.elements }
             .filterIsInstance<Element.Table>()
             .forEach { table ->
@@ -189,7 +189,7 @@ class CsvRowsWriter : DocumentWriter {
     }
 }
 
-val csv = CsvRowsWriter().write(doc)
+val csv = CsvRowsFormatter().format(doc)
 ```
 
 ### Building your own strategy

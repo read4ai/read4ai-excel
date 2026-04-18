@@ -8,13 +8,13 @@ import io.kotest.matchers.string.shouldNotContain
 import io.kotest.matchers.string.shouldStartWith
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class MarkdownWriterTest : FunSpec({
+class MarkdownFormatterTest : FunSpec({
 
     // Shared instance for all tests
-    val writer = MarkdownWriter()
+    val writer = MarkdownFormatter()
 
-    test("MarkdownWriter implements DocumentWriter") {
-        writer.shouldBeInstanceOf<DocumentWriter>()
+    test("MarkdownFormatter implements DocumentFormatter") {
+        writer.shouldBeInstanceOf<DocumentFormatter>()
     }
 
     test("heading element renders with correct prefix") {
@@ -145,7 +145,7 @@ class MarkdownWriterTest : FunSpec({
                 Sheet(0, "Sheet1", listOf(Element.Text(text = "Content"))),
             ),
         )
-        writer.write(doc) shouldBe writer.toMarkdown(doc)
+        writer.format(doc) shouldBe writer.toMarkdown(doc)
     }
 
     test("sheet renders as h2 with sheet name") {

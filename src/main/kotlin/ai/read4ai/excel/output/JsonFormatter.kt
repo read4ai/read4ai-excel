@@ -8,7 +8,7 @@ import ai.read4ai.excel.model.Sheet
 import tools.jackson.module.kotlin.jacksonObjectMapper
 
 /**
- * Writes an [ExcelDocument] to JSON.
+ * Formats an [ExcelDocument] as JSON.
  *
  * The [layout] parameter selects the table representation:
  * - [JsonLayout.COMPACT] — 2D string arrays with a sparse merge list (default)
@@ -17,28 +17,28 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
  * Example:
  * ```kotlin
  * val doc = ExcelParser.parse(bytes)
- * val json = JsonWriter().write(doc)                          // COMPACT
- * val rowObj = JsonWriter(JsonLayout.ROW_OBJECT).write(doc)   // ROW_OBJECT
+ * val json = JsonFormatter().format(doc)                          // COMPACT
+ * val rowObj = JsonFormatter(JsonLayout.ROW_OBJECT).format(doc)   // ROW_OBJECT
  * ```
  *
- * @see DocumentWriter
+ * @see DocumentFormatter
  */
-class JsonWriter @JvmOverloads constructor(
+class JsonFormatter @JvmOverloads constructor(
     @OptIn(ExperimentalRead4ai::class)
     private val layout: JsonLayout = JsonLayout.COMPACT,
-) : DocumentWriter {
+) : DocumentFormatter {
 
     @OptIn(ExperimentalRead4ai::class)
-    override fun write(document: ExcelDocument): String = when (layout) {
-        JsonLayout.COMPACT -> writeCompact(document)
-        JsonLayout.ROW_OBJECT -> writeRowObject(document)
+    override fun format(document: ExcelDocument): String = when (layout) {
+        JsonLayout.COMPACT -> formatCompact(document)
+        JsonLayout.ROW_OBJECT -> formatRowObject(document)
     }
 
     // ------------------------------------------------------------------
     // Compact layout
     // ------------------------------------------------------------------
 
-    private fun writeCompact(document: ExcelDocument): String {
+    private fun formatCompact(document: ExcelDocument): String {
         val root = mutableMapOf<String, Any>(
             "language" to document.language,
             "sheets" to document.sheets.map { compactSheet(it) },
@@ -90,7 +90,7 @@ class JsonWriter @JvmOverloads constructor(
     // Row-object layout
     // ------------------------------------------------------------------
 
-    private fun writeRowObject(document: ExcelDocument): String {
+    private fun formatRowObject(document: ExcelDocument): String {
         val root = mutableMapOf<String, Any>(
             "language" to document.language,
             "sheets" to document.sheets.map { rowObjectSheet(it) },
@@ -169,7 +169,7 @@ class JsonWriter @JvmOverloads constructor(
 
         /**
          * Deserialize a JSON string to an [ExcelDocument].
-         * Works with any JSON produced by [write], [toRawJson], or [toRawPrettyJson].
+         * Works with any JSON produced by [format], [toRawJson], or [toRawPrettyJson].
          */
         fun fromJson(json: String): ExcelDocument =
             mapper.readValue(json, ExcelDocument::class.java)

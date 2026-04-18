@@ -7,7 +7,7 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotBeBlank
 import io.kotest.matchers.types.shouldBeInstanceOf
 
-class JsonWriterTest : FunSpec({
+class JsonFormatterTest : FunSpec({
 
     fun sampleDocument(): ExcelDocument = ExcelDocument(
         fileName = "test.xlsx",
@@ -33,55 +33,55 @@ class JsonWriterTest : FunSpec({
         ),
     )
 
-    test("JsonWriter implements DocumentWriter") {
-        val writer = JsonWriter()
-        writer.shouldBeInstanceOf<DocumentWriter>()
+    test("JsonFormatter implements DocumentFormatter") {
+        val writer = JsonFormatter()
+        writer.shouldBeInstanceOf<DocumentFormatter>()
     }
 
     test("write() produces valid non-blank output") {
-        val json = JsonWriter().write(sampleDocument())
+        val json = JsonFormatter().format(sampleDocument())
         json.shouldNotBeBlank()
     }
 
     test("write() contains sheet name") {
-        val json = JsonWriter().write(sampleDocument())
+        val json = JsonFormatter().format(sampleDocument())
         json shouldContain "Sheet1"
     }
 
     test("write() contains element content") {
-        val json = JsonWriter().write(sampleDocument())
+        val json = JsonFormatter().format(sampleDocument())
         json shouldContain "Report Title"
         json shouldContain "Alice"
         json shouldContain "Some note"
     }
 
     test("toRawJson produces valid non-blank output") {
-        val json = JsonWriter.toRawJson(sampleDocument())
+        val json = JsonFormatter.toRawJson(sampleDocument())
         json.shouldNotBeBlank()
     }
 
     test("toRawJson contains fileName") {
-        val json = JsonWriter.toRawJson(sampleDocument())
+        val json = JsonFormatter.toRawJson(sampleDocument())
         json shouldContain "test.xlsx"
     }
 
     test("toRawPrettyJson contains indentation") {
-        val json = JsonWriter.toRawPrettyJson(sampleDocument())
+        val json = JsonFormatter.toRawPrettyJson(sampleDocument())
         json shouldContain "\n"
         json shouldContain "  "
     }
 
     test("round-trip: toRawJson then fromJson produces equal document") {
         val original = sampleDocument()
-        val json = JsonWriter.toRawJson(original)
-        val deserialized = JsonWriter.fromJson(json)
+        val json = JsonFormatter.toRawJson(original)
+        val deserialized = JsonFormatter.fromJson(json)
         deserialized shouldBe original
     }
 
     test("round-trip with pretty JSON") {
         val original = sampleDocument()
-        val json = JsonWriter.toRawPrettyJson(original)
-        val deserialized = JsonWriter.fromJson(json)
+        val json = JsonFormatter.toRawPrettyJson(original)
+        val deserialized = JsonFormatter.fromJson(json)
         deserialized shouldBe original
     }
 
@@ -91,8 +91,8 @@ class JsonWriterTest : FunSpec({
             numberOfSheets = 0,
             sheets = emptyList(),
         )
-        val json = JsonWriter.toRawJson(empty)
-        val deserialized = JsonWriter.fromJson(json)
+        val json = JsonFormatter.toRawJson(empty)
+        val deserialized = JsonFormatter.fromJson(json)
         deserialized shouldBe empty
     }
 
@@ -118,8 +118,8 @@ class JsonWriterTest : FunSpec({
                 ),
             ),
         )
-        val json = JsonWriter.toRawJson(doc)
-        val roundTripped = JsonWriter.fromJson(json)
+        val json = JsonFormatter.toRawJson(doc)
+        val roundTripped = JsonFormatter.fromJson(json)
         val cell = (roundTripped.sheets[0].elements[0] as Element.Table).rows[0].cells[0]
         cell.mergedRight shouldBe 2
         cell.mergedDown shouldBe 0
@@ -154,13 +154,13 @@ class JsonWriterTest : FunSpec({
                 ),
             ),
         )
-        val json = JsonWriter.toRawPrettyJson(doc)
+        val json = JsonFormatter.toRawPrettyJson(doc)
         json shouldContain "\"mergeRegions\""
         json shouldContain "\"cell\" : \"A1\""
         json shouldContain "\"rowSpan\" : 1"
         json shouldContain "\"colSpan\" : 3"
 
-        val roundTripped = JsonWriter.fromJson(json)
+        val roundTripped = JsonFormatter.fromJson(json)
         roundTripped.sheets[0].mergeRegions.size shouldBe 1
         roundTripped.sheets[0].mergeRegions[0].cell shouldBe "A1"
     }
@@ -183,8 +183,8 @@ class JsonWriterTest : FunSpec({
                 ),
             ),
         )
-        val json = JsonWriter.toRawJson(doc)
-        val result = JsonWriter.fromJson(json)
+        val json = JsonFormatter.toRawJson(doc)
+        val result = JsonFormatter.fromJson(json)
         val img = result.sheets[0].elements[0] as Element.Image
         img.base64 shouldBe "aGVsbG8="
         img.mimeType shouldBe "image/png"
