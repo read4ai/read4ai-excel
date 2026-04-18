@@ -46,21 +46,22 @@ The verification loop **parse → ask AI → measure → improve** runs on every
 
 > Bug reports and fixture submissions directly strengthen the loop. [Submit your golden set](docs/benchmark/README.md)
 
-### 2. Designed for AI, built to adapt
+### 2. Composable pipeline — you steer the strategy
 
 <p align="center">
   <img src="docs/images/pipeline.svg" alt="Pipeline" width="100%">
 </p>
 
-Most Excel parsers stop at extraction. But **the real goal isn't parsing. It's AI comprehension.**   
-We measure success by whether an LLM can correctly answer questions about the data.
+**The real goal isn't parsing — it's AI comprehension.** Success is measured by whether an LLM can correctly answer questions about the data.
 
-There is no single perfect algorithm for parsing Excel. We decompose the problem into a **pipeline**:
+And Excel doesn't have one right answer. A financial report, a multi-table schedule, and a scattered data export each reward different heuristics. Instead of hiding that, the pipeline is **open at every stage**:
 
-- New methodologies slot in without rewriting the whole system
-- If an experiment fails, rolling back is trivial
-- Each iteration produces more trusted pipeline combinations
-- The default pipeline works well for most files. [Compose your own](docs/guide.md) when it doesn't
+- **6 pluggable interfaces** — `WorkbookReader` · `GridExtractor` · `Segmenter` · `HeaderDetector` · `BlockOrderer` · `ElementClassifier`. Implement one, pass it to `PipelineConfig`, and your strategy is live.
+- **Output is an interface too** — `DocumentWriter` with two built-in layouts (compact JSON, markdown). Custom formats plug in the same way.
+- **Pre-tested strategies for known shapes** — `Strategy.balanced()` (default), or `complex()` / `structural()` / `scattered()` for multi-level merged headers, sparse data islands, and similar patterns.
+- **Safe experiments** — unstable APIs are marked `@ExperimentalRead4ai`; opt-in is explicit.
+
+If the default pipeline misses your use case, don't fork the library. Plug in the piece that fits — or inject a strategy tuned to your spreadsheets' character. [Compose your own](docs/guide.md).
 
 ### 3. Designed to be dependable
 
