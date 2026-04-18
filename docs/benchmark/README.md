@@ -32,7 +32,7 @@ Latest: [v0.1.0](v0.1.0.md) (2026-04-18)
 
 |              | read4ai-excel v0.1.0 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
 |--------------|----------------------|------------|--------------|--------------|
-| GPT-5.4 mini | 🏆 **87.5%**         | 82.0%      | 83.6%        | 82.8%        |
+| GPT-5.4 mini | 🏆 **88.3%**         | 82.0%      | 84.4%        | 82.8%        |
 
 Evaluated on 25+ fixtures / 128+ questions with GPT-5.4 mini. See [v0.1.0.md](v0.1.0.md) for per-fixture Q&A and expected/actual answers.
 
