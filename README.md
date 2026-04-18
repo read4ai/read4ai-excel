@@ -54,12 +54,10 @@ The verification loop **parse → ask AI → measure → improve** runs on every
 
 **The real goal isn't parsing — it's AI comprehension.** Success is measured by whether an LLM can correctly answer questions about the data.
 
-And Excel doesn't have one right answer. A financial report, a multi-table schedule, and a scattered data export each reward different heuristics. Instead of hiding that, the pipeline is **open at every stage**:
+And Excel doesn't have one right answer. A financial report, a multi-table schedule, and a scattered data export each reward different heuristics. Instead of hiding that, every axis — input pipeline *and* output format — is an interface you can swap.
 
-- **6 pluggable interfaces** — `WorkbookReader` · `GridExtractor` · `Segmenter` · `HeaderDetector` · `BlockOrderer` · `ElementClassifier`. Implement one, pass it to `PipelineConfig`, and your strategy is live.
-- **Output is an interface too** — `DocumentFormatter` with two built-in layouts (compact JSON, Markdown). Custom formats plug in the same way.
-- **Pre-tested strategies for known shapes** — `Strategy.balanced()` (default), or `complex()` / `structural()` / `scattered()` for multi-level merged headers, sparse data islands, and similar patterns.
-- **Safe experiments** — unstable APIs are marked `@ExperimentalRead4ai`; opt-in is explicit.
+- **Four pre-built strategies** ship with the library: `balanced` (default) plus `complex` / `structural` / `scattered` for multi-level merged headers, sparse data islands, and similar patterns.
+- **Experimental axes** are marked `@ExperimentalRead4ai`; opt-in is explicit.
 
 If the default pipeline misses your use case, don't fork the library. Plug in the piece that fits — or inject a strategy tuned to your spreadsheets' character. [Compose your own](docs/guide.md).
 
