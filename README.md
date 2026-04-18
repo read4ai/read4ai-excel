@@ -46,7 +46,7 @@ The verification loop **parse → ask AI → measure → improve** runs on every
 
 > Bug reports and fixture submissions directly strengthen the loop. [Submit your golden set](docs/benchmark/README.md)
 
-### 2. Composable pipeline — you steer the strategy
+### 2. Designed to be composable, not prescriptive
 
 <p align="center">
   <img src="docs/images/pipeline.svg" alt="Pipeline" width="100%">
