@@ -110,39 +110,104 @@ _[merged RxC] = spans R rows × C columns_
 
 ## Advanced
 
-### Strategies
+### Why composable?
 
-A **strategy** is a tested combination of pipeline options. The default (`balanced`) works well for most files.
+Excel doesn't have a single right parser. A financial report, a scattered data export, and a report with merged headers each reward different heuristics. Instead of forcing one algorithm, read4ai-excel exposes the parsing pipeline as **interfaces** you can swap.
+
+`PipelineConfig` holds six input-stage interfaces and `DocumentWriter` covers output. Strategies are just pre-built combinations — no magic, just convenience.
+
+### Strategies (pre-built combinations)
 
 ```kotlin
+// Use a built-in strategy
 val doc = ExcelParser.parse(path, pipeline = PipelineConfig.Strategy.complex())
 
-// compose your own
+// Compose your own
 val doc = ExcelParser.parse(path, pipeline = PipelineConfig(
     segmenter = ThreeLevelSegmenter(),
     headerDetector = SingleRowHeaderDetector(),
 ))
 ```
 
-| Strategy | Segmenter | Header Detector | Block Orderer | Best for |
-|----------|-----------|-----------------|---------------|----------|
+| Strategy | Segmenter | HeaderDetector | BlockOrderer | Best for |
+|----------|-----------|----------------|--------------|----------|
 | **balanced** (default) | Graph | MergeAware | Deferred | Most files |
-| **complex** (experimental) | Graph | HierarchyAware | Deferred | Multi-level merged headers |
-| structural | ThreeLevel | MergeAware | Sequential | Simple structure |
-| scattered | Graph (no merge) | SingleRow | Sequential | Scattered data islands |
+| complex ⚠️ | Graph | HierarchyAware | Deferred | Multi-level merged headers |
+| structural ⚠️ | ThreeLevel | MergeAware | Sequential | Simple structure |
+| scattered ⚠️ | Graph (no merge) | SingleRow | Sequential | Scattered data islands |
 
-### Pipeline axes
+⚠️ marked as `@ExperimentalRead4ai` — opt-in required, API may change:
 
-Each axis has pluggable options. **Bold** = balanced default.
+```kotlin
+@OptIn(ExperimentalRead4ai::class)
+val doc = ExcelParser.parse(path, pipeline = PipelineConfig.Strategy.complex())
+```
 
-| Axis | Options |
-|------|---------|
-| Segmenter | **GraphSegmenter**, ThreeLevelSegmenter, SimpleSegmenter |
-| Header Detector | **MergeAwareHeaderDetector**, HierarchyAwareHeaderDetector, SingleRowHeaderDetector |
-| Block Orderer | **DeferredBlockOrderer**, SequentialBlockOrderer |
-| Element Classifier | **DefaultElementClassifier** |
+### Pipeline axes (6 interfaces)
 
-### Language Detection
+All six input stages are interfaces. Implement one and pass it to `PipelineConfig`. **Bold** = balanced default. `(1 impl)` = shipped with a single implementation today; the interface is open for your own.
+
+| Axis | Interface | Options |
+|------|-----------|---------|
+| 1. Workbook read | `WorkbookReader` | **PoiWorkbookReader** `(1 impl)` |
+| 2. Grid extraction | `GridExtractor` | **DefaultGridExtractor** `(1 impl)` |
+| 3. Segmentation | `Segmenter` | **GraphSegmenter**, ThreeLevelSegmenter, SimpleSegmenter |
+| 4. Header detection | `HeaderDetector` | **MergeAwareHeaderDetector**, HierarchyAwareHeaderDetector, SingleRowHeaderDetector |
+| 5. Block ordering | `BlockOrderer` | **DeferredBlockOrderer**, SequentialBlockOrderer |
+| 6. Element classification | `ElementClassifier` | **DefaultElementClassifier** `(1 impl)` |
+
+### Output: DocumentWriter
+
+Output is also an interface. Two built-in writers plus your own:
+
+```kotlin
+import ai.read4ai.excel.output.*
+
+val doc = ExcelParser.parse(path)
+
+// Built-in writers
+val compact: String = JsonWriter().write(doc)                            // COMPACT (default)
+val rowObject: String = JsonWriter(JsonLayout.ROW_OBJECT).write(doc)     // ROW_OBJECT (experimental)
+val md: String = MarkdownWriter().write(doc)
+
+// Or use the Formatter facade (same result)
+val json = Formatter.toJson(doc)
+```
+
+To add your own format, implement `DocumentWriter`:
+
+```kotlin
+class CsvRowsWriter : DocumentWriter {
+    override fun write(document: ExcelDocument): String = buildString {
+        document.sheets.flatMap { it.elements }
+            .filterIsInstance<Element.Table>()
+            .forEach { table ->
+                table.rows.forEach { row ->
+                    appendLine(row.cells.joinToString(",") { it.value })
+                }
+            }
+    }
+}
+
+val csv = CsvRowsWriter().write(doc)
+```
+
+### Building your own strategy
+
+Implement any axis, plug it in:
+
+```kotlin
+class MySegmenter : Segmenter {
+    override fun segment(grid: Grid): List<Segment> = /* ... */
+}
+
+val doc = ExcelParser.parse(path, pipeline = PipelineConfig(
+    segmenter = MySegmenter(),
+    // other axes keep their defaults
+))
+```
+
+### Language detection
 
 ```kotlin
 doc.language  // "KO", "EN", or "JA"
