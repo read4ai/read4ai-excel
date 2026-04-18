@@ -52,14 +52,20 @@ The verification loop **parse → ask AI → measure → improve** runs on every
   <img src="docs/images/pipeline.svg" alt="Pipeline" width="100%">
 </p>
 
-**The real goal isn't parsing — it's AI comprehension.** Success is measured by whether an LLM can correctly answer questions about the data.
+**The real goal isn't parsing — it's AI comprehension.**
+Success is measured by whether an LLM can correctly answer questions about the data.
 
-And Excel doesn't have one right answer. A financial report, a multi-table schedule, and a scattered data export each reward different heuristics. Instead of hiding that, every axis — input pipeline *and* output format — is an interface you can swap.
+And Excel doesn't have one right answer.
+A financial report, a multi-table schedule, and a scattered data export each reward different heuristics.
 
-- **Four pre-built strategies** ship with the library: `balanced` (default) plus `complex` / `structural` / `scattered` for multi-level merged headers, sparse data islands, and similar patterns.
-- **Experimental axes** are marked `@ExperimentalRead4ai`; opt-in is explicit.
+Instead of hiding that, every axis — input pipeline *and* output format — is an interface you can swap.
 
-If the default pipeline misses your use case, don't fork the library. Plug in the piece that fits — or inject a strategy tuned to your spreadsheets' character. [Compose your own](docs/guide.md).
+- **Four pre-built strategies** — `balanced` (default) plus `complex` / `structural` / `scattered` for multi-level merged headers, sparse data islands, and similar patterns.
+- **Experimental axes** — marked `@ExperimentalRead4ai`; opt-in is explicit.
+
+If the default pipeline misses your use case, don't fork the library.
+Plug in the piece that fits — or inject a strategy tuned to your spreadsheets' character.
+[Compose your own](docs/guide.md).
 
 ### 3. Designed to be dependable
 
