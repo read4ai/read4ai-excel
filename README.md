@@ -63,9 +63,7 @@ Instead of hiding that, every axis — input pipeline *and* output format — is
 - **Four pre-built strategies** — `balanced` (default) plus `complex` / `structural` / `scattered` for multi-level merged headers, sparse data islands, and similar patterns.
 - **Experimental axes** — marked `@ExperimentalRead4ai`; opt-in is explicit.
 
-If the default pipeline misses your use case, don't fork the library.
-Plug in the piece that fits — or inject a strategy tuned to your spreadsheets' character.
-[Compose your own](docs/guide.md).
+> Custom strategies plug in without forking the library. [Compose your own](docs/guide.md)
 
 ### 3. Designed to be dependable
 
