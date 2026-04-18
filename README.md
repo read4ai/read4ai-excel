@@ -34,7 +34,9 @@ Spreadsheets mix data with layout. No semantic markup to guide a parser:
 
 ### 1. Designed to be verified, not just claimed
 
-Benchmark results will be published here when v0.1.0 is out.
+| 2026-04-18        | read4ai-excel v0.1.0 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
+|-------------------|----------------------|------------|--------------|--------------|
+| GPT-5.4 mini      | 🏆 **87.5%**        | 82.0%      | 83.6%        | 82.8%        |
 
 The verification loop **parse → ask AI → measure → improve** runs on every change.
 

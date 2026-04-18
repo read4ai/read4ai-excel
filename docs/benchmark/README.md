@@ -26,7 +26,16 @@ Fixture files are in [`fixtures/`](fixtures/).
 
 ## Results
 
-Results will be published here when v0.1.0 benchmarks are available.
+Latest: [v0.1.0](v0.1.0.md) (2026-04-18)
+
+| Parser            | Overall  |
+|-------------------|----------|
+| **read4ai-excel** | 🏆 **87.5%** |
+| SheetJS 0.20      | 83.6%    |
+| calamine 0.6      | 82.8%    |
+| pandas 3.0        | 82.0%    |
+
+Evaluated on 25+ fixtures / 128+ questions with GPT-5.4 mini. See [v0.1.0.md](v0.1.0.md) for per-fixture Q&A and expected/actual answers.
 
 ## Submit your golden set
 
