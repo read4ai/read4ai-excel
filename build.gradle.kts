@@ -11,11 +11,11 @@ val jacksonVersion: String by project
 val kotestVersion: String by project
 
 group = "ai.read4ai"
-version = "0.1.0"
+version = "0.1.1"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(25))
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
 }
 
