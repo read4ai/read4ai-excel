@@ -4,13 +4,9 @@
 
 ### v0.1.x — Initial release
 
-- Composable pipeline with interface-based steps (6 stages, user-swappable)
-- Default strategy `balanced` tested against a golden set
-- Output layer as interface (`DocumentWriter`) — users can plug in custom formats
-- JSON (compact / row-object) and Markdown writers out of the box
-- Merge region metadata, multi-level headers, hierarchy paths
+- Composable pipeline (6 input axes + pluggable `DocumentFormatter`)
+- Default `balanced` strategy verified on a public golden set
 - Language detection (KO / EN / JA)
-- `@ExperimentalRead4ai` opt-in marker for unstable APIs
 - Java 17 baseline, pure Kotlin + Apache POI
 - [Live demo](https://huggingface.co/spaces/read4ai/read4ai) with Ask AI
 

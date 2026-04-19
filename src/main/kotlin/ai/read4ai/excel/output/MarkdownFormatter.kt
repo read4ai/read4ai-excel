@@ -1,5 +1,6 @@
 package ai.read4ai.excel.output
 
+import ai.read4ai.excel.ExperimentalRead4ai
 import ai.read4ai.excel.model.Element
 import ai.read4ai.excel.model.ExcelDocument
 import ai.read4ai.excel.model.MergeRegionInfo
@@ -14,6 +15,9 @@ import ai.read4ai.excel.model.Sheet
  * - Column/row hierarchy paths
  * - Sheet-level merge region summary
  *
+ * Markdown only supports [Layout.COMPACT]; passing [Layout.ROW_OBJECT] throws
+ * [UnsupportedOperationException].
+ *
  * Example:
  * ```kotlin
  * val doc = ExcelParser.parse(bytes)
@@ -22,7 +26,17 @@ import ai.read4ai.excel.model.Sheet
  *
  * @see DocumentFormatter
  */
-class MarkdownFormatter : DocumentFormatter {
+class MarkdownFormatter @JvmOverloads constructor(
+    @OptIn(ExperimentalRead4ai::class)
+    private val layout: Layout = Layout.COMPACT,
+) : DocumentFormatter {
+
+    init {
+        @OptIn(ExperimentalRead4ai::class)
+        require(layout == Layout.COMPACT) {
+            "MarkdownFormatter does not support layout=$layout. Only Layout.COMPACT is supported."
+        }
+    }
 
     override fun format(document: ExcelDocument): String = toMarkdown(document)
 
