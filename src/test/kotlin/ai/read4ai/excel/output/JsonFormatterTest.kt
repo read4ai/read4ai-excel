@@ -1,5 +1,6 @@
 package ai.read4ai.excel.output
 
+import ai.read4ai.excel.ExperimentalRead4ai
 import ai.read4ai.excel.model.*
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -53,6 +54,13 @@ class JsonFormatterTest : FunSpec({
         json shouldContain "Report Title"
         json shouldContain "Alice"
         json shouldContain "Some note"
+    }
+
+    test("ROW_OBJECT layout produces row records") {
+        @OptIn(ExperimentalRead4ai::class)
+        val json = JsonFormatter(Layout.ROW_OBJECT).format(sampleDocument())
+        json shouldContain "\"row\""
+        json shouldContain "\"cells\""
     }
 
     test("toRawJson produces valid non-blank output") {

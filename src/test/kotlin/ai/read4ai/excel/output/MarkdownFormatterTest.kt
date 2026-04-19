@@ -1,6 +1,8 @@
 package ai.read4ai.excel.output
 
+import ai.read4ai.excel.ExperimentalRead4ai
 import ai.read4ai.excel.model.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -15,6 +17,15 @@ class MarkdownFormatterTest : FunSpec({
 
     test("MarkdownFormatter implements DocumentFormatter") {
         writer.shouldBeInstanceOf<DocumentFormatter>()
+    }
+
+    test("MarkdownFormatter rejects ROW_OBJECT layout") {
+        @OptIn(ExperimentalRead4ai::class)
+        shouldThrow<IllegalArgumentException> { MarkdownFormatter(Layout.ROW_OBJECT) }
+    }
+
+    test("MarkdownFormatter accepts COMPACT layout explicitly") {
+        MarkdownFormatter(Layout.COMPACT).shouldBeInstanceOf<DocumentFormatter>()
     }
 
     test("heading element renders with correct prefix") {

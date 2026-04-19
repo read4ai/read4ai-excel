@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.read4ai:read4ai-excel:v0.1.1")
+    implementation("com.github.read4ai:read4ai-excel:v0.1.2")
 }
 ```
 
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.read4ai:read4ai-excel:v0.1.1'
+    implementation 'com.github.read4ai:read4ai-excel:v0.1.2'
 }
 ```
 
@@ -41,7 +41,7 @@ dependencies {
 <dependency>
   <groupId>com.github.read4ai</groupId>
   <artifactId>read4ai-excel</artifactId>
-  <version>v0.1.1</version>
+  <version>v0.1.2</version>
 </dependency>
 ```
 
@@ -158,21 +158,29 @@ All six input stages are interfaces. Implement one and pass it to `PipelineConfi
 
 ### Output: DocumentFormatter
 
-Output is also an interface. Two built-in formatters plus your own:
+Output has two independent axes — **format** (JSON / Markdown) and **layout** (`COMPACT` / `ROW_OBJECT`):
 
 ```kotlin
 import ai.read4ai.excel.output.*
 
 val doc = ExcelParser.parse(path)
 
-// Built-in formatters
-val compact: String = JsonFormatter().format(doc)                            // COMPACT (default)
-val rowObject: String = JsonFormatter(JsonLayout.ROW_OBJECT).format(doc)     // ROW_OBJECT (experimental)
+// JSON × layout
+val compact: String   = JsonFormatter().format(doc)                       // COMPACT (default)
+val rowObject: String = JsonFormatter(Layout.ROW_OBJECT).format(doc)      // ROW_OBJECT (experimental)
+
+// Markdown — only COMPACT is supported (ROW_OBJECT throws)
 val md: String = MarkdownFormatter().format(doc)
 
-// Or use the Formatter facade (same result)
+// Or use the Formatter facade
 val json = Formatter.toJson(doc)
+val mdAlt = Formatter.toMarkdown(doc)
 ```
+
+| Format \ Layout | `COMPACT` | `ROW_OBJECT` |
+|-----------------|-----------|--------------|
+| JSON            | ✅ default | ⚠️ experimental |
+| Markdown        | ✅ default | ❌ unsupported  |
 
 To add your own format, implement `DocumentFormatter`:
 
