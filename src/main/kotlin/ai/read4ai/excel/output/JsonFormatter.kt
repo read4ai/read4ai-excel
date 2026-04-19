@@ -11,27 +11,27 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
  * Formats an [ExcelDocument] as JSON.
  *
  * The [layout] parameter selects the table representation:
- * - [JsonLayout.COMPACT] — 2D string arrays with a sparse merge list (default)
- * - [JsonLayout.ROW_OBJECT] — row objects `{"row": N, "cells": [...]}` with inline merge info
+ * - [Layout.COMPACT] — 2D string arrays with a sparse merge list (default)
+ * - [Layout.ROW_OBJECT] — row objects `{"row": N, "cells": [...]}` with inline merge info
  *
  * Example:
  * ```kotlin
  * val doc = ExcelParser.parse(bytes)
- * val json = JsonFormatter().format(doc)                          // COMPACT
- * val rowObj = JsonFormatter(JsonLayout.ROW_OBJECT).format(doc)   // ROW_OBJECT
+ * val json = JsonFormatter().format(doc)                      // COMPACT
+ * val rowObj = JsonFormatter(Layout.ROW_OBJECT).format(doc)   // ROW_OBJECT
  * ```
  *
  * @see DocumentFormatter
  */
 class JsonFormatter @JvmOverloads constructor(
     @OptIn(ExperimentalRead4ai::class)
-    private val layout: JsonLayout = JsonLayout.COMPACT,
+    private val layout: Layout = Layout.COMPACT,
 ) : DocumentFormatter {
 
     @OptIn(ExperimentalRead4ai::class)
     override fun format(document: ExcelDocument): String = when (layout) {
-        JsonLayout.COMPACT -> formatCompact(document)
-        JsonLayout.ROW_OBJECT -> formatRowObject(document)
+        Layout.COMPACT -> formatCompact(document)
+        Layout.ROW_OBJECT -> formatRowObject(document)
     }
 
     // ------------------------------------------------------------------

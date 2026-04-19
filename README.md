@@ -37,7 +37,7 @@ Success is measured by whether an LLM can correctly answer questions about the d
 
 ### 1. Designed to be verified, not just claimed
 
-| 2026-04-19        | read4ai-excel v0.1.1 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
+| 2026-04-19        | read4ai-excel v0.1.2 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
 |-------------------|----------------------|------------|--------------|--------------|
 | GPT-5.4 mini      | 🏆 **86.3%**        | 76.3%      | 82.7%        | 74.8%        |
 

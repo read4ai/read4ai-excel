@@ -11,7 +11,7 @@ val jacksonVersion: String by project
 val kotestVersion: String by project
 
 group = "ai.read4ai"
-version = "0.1.1"
+version = "0.1.2"
 
 java {
     toolchain {

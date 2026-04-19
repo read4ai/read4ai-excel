@@ -6,8 +6,8 @@
 
 - Composable pipeline with interface-based steps (6 stages, user-swappable)
 - Default strategy `balanced` tested against a golden set
-- Output layer as interface (`DocumentWriter`) — users can plug in custom formats
-- JSON (compact / row-object) and Markdown writers out of the box
+- Output layer as interface (`DocumentFormatter`) — users can plug in custom formats
+- Two-axis output: format (JSON / Markdown) × layout (`COMPACT` / `ROW_OBJECT`)
 - Merge region metadata, multi-level headers, hierarchy paths
 - Language detection (KO / EN / JA)
 - `@ExperimentalRead4ai` opt-in marker for unstable APIs
