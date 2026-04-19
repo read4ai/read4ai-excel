@@ -11,7 +11,7 @@
 - Merge region metadata, multi-level headers, hierarchy paths
 - Language detection (KO / EN / JA)
 - `@ExperimentalRead4ai` opt-in marker for unstable APIs
-- Java 25 baseline, virtual threads, pure Kotlin + Apache POI
+- Java 17 baseline, pure Kotlin + Apache POI
 - [Live demo](https://huggingface.co/spaces/read4ai/read4ai) with Ask AI
 
 ---
@@ -20,7 +20,7 @@
 
 - Stable public API with semantic versioning guarantees
 - One well-tested default strategy (balanced), continuously improved
-- Multi-JVM target: jvm25 (default) + jvm21 + jvm17
+- Multi-JVM target: jvm17 (default) + jvm21 + jvm25
 
 ## v2 — Multi-model optimization + adaptive parsing
 

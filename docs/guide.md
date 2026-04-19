@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.read4ai:read4ai-excel:v0.1.0")
+    implementation("com.github.read4ai:read4ai-excel:v0.1.1")
 }
 ```
 
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.read4ai:read4ai-excel:v0.1.0'
+    implementation 'com.github.read4ai:read4ai-excel:v0.1.1'
 }
 ```
 
@@ -41,11 +41,11 @@ dependencies {
 <dependency>
   <groupId>com.github.read4ai</groupId>
   <artifactId>read4ai-excel</artifactId>
-  <version>v0.1.0</version>
+  <version>v0.1.1</version>
 </dependency>
 ```
 
-**Requirements:** Java 25+, Kotlin 2.3+ (for Kotlin projects)
+**Requirements:** Java 17+, Kotlin 2.3+ (for Kotlin projects)
 
 ## Parse
 

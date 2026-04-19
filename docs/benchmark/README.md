@@ -7,9 +7,9 @@
 3. Check if the LLM's answer matches the verified consensus answer
 4. Score = % of correct answers
 
-> **Note:** the published features below are a representative subset for transparency. The full golden set remains private and continues to grow.
+> **Note:** the Public features below are a representative subset for transparency. The full golden set — including Private features — remains private and continues to grow.
 
-## Published features
+## Public features
 
 Fixture files are in [`fixtures/`](fixtures/).
 
@@ -25,10 +25,6 @@ Fixture files are in [`fixtures/`](fixtures/).
 | R08_multi-dept.xlsx | EN | 6 | 172 | 22 | 18 | Multi-department report (6 sheets) |
 | R09_schedule.xlsx | EN | 1 | 9 | 6 | 3 | Weekly schedule with merged cells |
 | R10_time-tracking.xlsx | EN | 1 | 152 | 30 | 5 | Time tracking (150 employees) |
-
-## Results
-
-See [v0.1.0](v0.1.0.md) for the latest benchmark (per-feature Q&A and expected/actual answers).
 
 ## Submit your golden set
 

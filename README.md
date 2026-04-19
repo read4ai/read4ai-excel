@@ -10,7 +10,7 @@
 [![](https://jitpack.io/v/read4ai/read4ai-excel.svg)](https://jitpack.io/#read4ai/read4ai-excel)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3-blue.svg)](https://kotlinlang.org)
-[![Java](https://img.shields.io/badge/Java-25%2B-green.svg)](docs/guide.md)
+[![Java](https://img.shields.io/badge/Java-17%2B-green.svg)](docs/guide.md)
 [![GitHub](https://img.shields.io/badge/Contact-GitHub-181717?logo=github)](https://github.com/Hyune-c)
 [![LinkedIn](https://img.shields.io/badge/Contact-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/b30b971a0/)
 
@@ -37,9 +37,9 @@ Success is measured by whether an LLM can correctly answer questions about the d
 
 ### 1. Designed to be verified, not just claimed
 
-| 2026-04-18        | read4ai-excel v0.1.0 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
+| 2026-04-19        | read4ai-excel v0.1.1 | pandas 3.0 | SheetJS 0.20 | calamine 0.6 |
 |-------------------|----------------------|------------|--------------|--------------|
-| GPT-5.4 mini      | 🏆 **88.3%**        | 82.0%      | 84.4%        | 82.8%        |
+| GPT-5.4 mini      | 🏆 **86.3%**        | 76.3%      | 82.7%        | 74.8%        |
 
 The verification loop **parse → ask AI → measure → improve** runs on every change.
 
