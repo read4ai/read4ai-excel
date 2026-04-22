@@ -126,13 +126,26 @@ internal object GridExtractor {
         val mappedMergedRegions = buildList {
             sheet.mergedRegions.forEach { region ->
                 val visibleRowsInRegion = visibleRowIndices.filter { it in region.firstRow..region.lastRow }
-                if (visibleRowsInRegion.isNotEmpty()) {
-                    val firstVisibleSheetRow = visibleRowsInRegion.first()
-                    val lastVisibleSheetRow = visibleRowsInRegion.last()
-                    val mappedFirst = sheetRowToGridIndex[firstVisibleSheetRow] ?: return@forEach
-                    val mappedLast = sheetRowToGridIndex[lastVisibleSheetRow] ?: return@forEach
-                    add(CellRangeAddress(mappedFirst, mappedLast, region.firstColumn, region.lastColumn))
-                }
+                val visibleColsInRegion = visibleColumns.filter { it in region.firstColumn..region.lastColumn }
+                if (visibleRowsInRegion.isEmpty() || visibleColsInRegion.isEmpty()) return@forEach
+
+                val firstVisibleSheetRow = visibleRowsInRegion.first()
+                val lastVisibleSheetRow = visibleRowsInRegion.last()
+                val firstVisibleSheetCol = visibleColsInRegion.first()
+                val lastVisibleSheetCol = visibleColsInRegion.last()
+                val mappedFirstRow = sheetRowToGridIndex[firstVisibleSheetRow] ?: return@forEach
+                val mappedLastRow = sheetRowToGridIndex[lastVisibleSheetRow] ?: return@forEach
+                val mappedFirstCol = sheetColToGridIndex[firstVisibleSheetCol] ?: return@forEach
+                val mappedLastCol = sheetColToGridIndex[lastVisibleSheetCol] ?: return@forEach
+
+                add(
+                    CellRangeAddress(
+                        mappedFirstRow,
+                        mappedLastRow,
+                        mappedFirstCol,
+                        mappedLastCol,
+                    )
+                )
             }
         }
 

@@ -43,13 +43,14 @@ class HierarchyAwareHeaderDetector : HeaderDetector {
         }
 
         val mergeRegions = segment.grid.mergeRegions
+        val headerStartRow = MergeAwareHeaderDetector().findHeaderStartRow(cells, mergeRegions)
         val colCount = cells.maxOfOrNull { it.size } ?: 0
 
         // Build column paths from top header rows
-        val columnPaths = buildColumnPaths(cells, mergeRegions, baseInfo.headerRowCount, colCount)
+        val columnPaths = buildColumnPaths(cells, mergeRegions, headerStartRow, baseInfo.headerRowCount, colCount)
 
         // Build row paths from left-side merged headers in the data area
-        val rowPaths = buildRowPaths(cells, mergeRegions, baseInfo.headerRowCount, colCount)
+        val rowPaths = buildRowPaths(cells, mergeRegions, headerStartRow, baseInfo.headerRowCount, colCount)
 
         log.debug {
             "${baseInfo.headerRowCount} header row(s), " +
@@ -71,6 +72,7 @@ class HierarchyAwareHeaderDetector : HeaderDetector {
     internal fun buildColumnPaths(
         cells: List<List<String>>,
         mergeRegions: List<MergeRegion>,
+        headerStartRow: Int,
         headerRowCount: Int,
         colCount: Int,
     ): Map<Int, List<String>> {
@@ -78,7 +80,7 @@ class HierarchyAwareHeaderDetector : HeaderDetector {
 
         // Build a resolved grid for header rows where each cell knows its effective value
         // (accounting for horizontal merges that propagate values across columns)
-        val resolvedHeader = resolveHeaderGrid(cells, mergeRegions, headerRowCount, colCount)
+        val resolvedHeader = resolveHeaderGrid(cells, mergeRegions, headerStartRow, headerRowCount, colCount)
 
         val paths = mutableMapOf<Int, List<String>>()
         for (col in 0 until colCount) {
@@ -110,13 +112,14 @@ class HierarchyAwareHeaderDetector : HeaderDetector {
     internal fun buildRowPaths(
         cells: List<List<String>>,
         mergeRegions: List<MergeRegion>,
+        headerStartRow: Int,
         headerRowCount: Int,
         colCount: Int,
     ): Map<Int, List<String>> {
-        if (headerRowCount >= cells.size) return emptyMap()
+        val dataStartRow = headerStartRow + headerRowCount
+        if (dataStartRow >= cells.size) return emptyMap()
 
         // Find left-side columns that have vertical merges in the data area
-        val dataStartRow = headerRowCount
         val leftMergeColumns = findLeftMergeColumns(mergeRegions, dataStartRow, cells.size, colCount)
         if (leftMergeColumns.isEmpty()) return emptyMap()
 
@@ -148,25 +151,29 @@ class HierarchyAwareHeaderDetector : HeaderDetector {
     private fun resolveHeaderGrid(
         cells: List<List<String>>,
         mergeRegions: List<MergeRegion>,
+        headerStartRow: Int,
         headerRowCount: Int,
         colCount: Int,
     ): List<List<String>> {
         // Start with the raw values
         val grid = (0 until headerRowCount).map { row ->
             (0 until colCount).map { col ->
-                cells.getOrNull(row)?.getOrNull(col) ?: ""
+                cells.getOrNull(headerStartRow + row)?.getOrNull(col) ?: ""
             }.toMutableList()
         }
 
         // Apply merge regions: propagate the top-left cell's value to all cells in the region
         for (region in mergeRegions) {
+            if (region.lastRow < headerStartRow || region.firstRow >= headerStartRow + headerRowCount) continue
+
             val sourceValue = cells.getOrNull(region.firstRow)?.getOrNull(region.firstCol) ?: ""
             if (sourceValue.isBlank()) continue
 
-            for (r in region.firstRow..minOf(region.lastRow, headerRowCount - 1)) {
+            for (r in maxOf(region.firstRow, headerStartRow)..minOf(region.lastRow, headerStartRow + headerRowCount - 1)) {
                 for (c in region.firstCol..minOf(region.lastCol, colCount - 1)) {
-                    if (r < grid.size && c < grid[r].size) {
-                        grid[r][c] = sourceValue
+                    val localRow = r - headerStartRow
+                    if (localRow < grid.size && c < grid[localRow].size) {
+                        grid[localRow][c] = sourceValue
                     }
                 }
             }

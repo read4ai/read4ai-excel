@@ -228,4 +228,43 @@ internal object SpatialSegmenter {
         }
         return null
     }
+
+    /**
+     * True when every non-empty cell in [rows] sits in the same column
+     * AND at least one cell contains whitespace (a sentence, not a code).
+     *
+     * Typical shape: a notice / disclaimer block where each line of text
+     * lives in a single column while the surrounding columns are blank.
+     * The whitespace requirement keeps single-column data tables (e.g.
+     * a list of identifier codes) as tables instead of collapsing them
+     * into a Text element.
+     */
+    fun isSingleColumnTextBlock(rows: List<List<String>>): Boolean {
+        if (rows.isEmpty()) return false
+        val cols = mutableSetOf<Int>()
+        var anyHasWhitespace = false
+        for (row in rows) {
+            for ((colIdx, cell) in row.withIndex()) {
+                if (cell.isNotBlank()) {
+                    cols.add(colIdx)
+                    if (cols.size > 1) return false
+                    if (!anyHasWhitespace && cell.any { it.isWhitespace() }) {
+                        anyHasWhitespace = true
+                    }
+                }
+            }
+        }
+        return cols.size == 1 && anyHasWhitespace
+    }
+
+    /** Joins every non-empty cell in row order, separated by newlines. */
+    fun extractSingleColumnText(rows: List<List<String>>): String {
+        val parts = mutableListOf<String>()
+        for (row in rows) {
+            for (cell in row) {
+                if (cell.isNotBlank()) parts.add(cell)
+            }
+        }
+        return parts.joinToString("\n")
+    }
 }

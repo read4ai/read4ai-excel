@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.read4ai:read4ai-excel:v0.1.2")
+    implementation("com.github.read4ai:read4ai-excel:v0.2.0")
 }
 ```
 
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.read4ai:read4ai-excel:v0.1.2'
+    implementation 'com.github.read4ai:read4ai-excel:v0.2.0'
 }
 ```
 
@@ -41,7 +41,7 @@ dependencies {
 <dependency>
   <groupId>com.github.read4ai</groupId>
   <artifactId>read4ai-excel</artifactId>
-  <version>v0.1.2</version>
+  <version>v0.2.0</version>
 </dependency>
 ```
 
@@ -158,29 +158,35 @@ All six input stages are interfaces. Implement one and pass it to `PipelineConfi
 
 ### Output: DocumentFormatter
 
-Output has two independent axes — **format** (JSON / Markdown) and **layout** (`COMPACT` / `ROW_OBJECT`):
+Output has three independent axes — **format** (JSON / Markdown), **layout** (`COMPACT` / `ROW_OBJECT`), and **assist** (`NONE` / `ON`):
 
 ```kotlin
-import ai.read4ai.excel.output.*
-
 val doc = ExcelParser.parse(path)
 
-// JSON × layout
-val compact: String   = JsonFormatter().format(doc)                       // COMPACT (default)
-val rowObject: String = JsonFormatter(Layout.ROW_OBJECT).format(doc)      // ROW_OBJECT (experimental)
+// JSON × layout (assist defaults to NONE)
+val compact = JsonFormatter().format(doc)                       // COMPACT (default)
+val rowObject = JsonFormatter(Layout.ROW_OBJECT).format(doc)    // ROW_OBJECT (experimental)
+val md = MarkdownFormatter().format(doc)
 
-// Markdown — only COMPACT is supported (ROW_OBJECT throws)
-val md: String = MarkdownFormatter().format(doc)
+// Assist ON — embeds a short system-prompt-like `prompt` field/block at
+// the document root and inside every sheet so an LLM can interpret the
+// payload without external instructions
+val annotated = JsonFormatter(assist = Assist.ON).format(doc)
+val annotatedMd = MarkdownFormatter(assist = Assist.ON).format(doc)
 
-// Or use the Formatter facade
-val json = Formatter.toJson(doc)
-val mdAlt = Formatter.toMarkdown(doc)
+// Formatter facade (3-axis form)
+val json = Formatter.toJson(doc, Layout.COMPACT, Assist.ON)
+val mdAlt = Formatter.toMarkdown(doc, Layout.COMPACT, Assist.ON)
 ```
 
-| Format \ Layout | `COMPACT` | `ROW_OBJECT` |
-|-----------------|-----------|--------------|
-| JSON            | ✅ default | ⚠️ experimental |
-| Markdown        | ✅ default | ❌ unsupported  |
+Supported combinations:
+
+| Format × Layout × Assist | `COMPACT × NONE` | `COMPACT × ON` | `ROW_OBJECT × NONE` | `ROW_OBJECT × ON` |
+|--------------------------|------------------|----------------|---------------------|-------------------|
+| JSON                     | ✅ default        | ✅              | ⚠️ experimental      | ⚠️ experimental    |
+| Markdown                 | ✅ default        | ✅              | ❌ unsupported       | ❌ unsupported     |
+
+`Assist.ON` adds tokens (~100 per sheet) — enable it when you feed the output directly to an LLM and want the schema explained in-band. Use `Assist.NONE` for minimal-token pipelines where you control the prompt separately.
 
 To add your own format, implement `DocumentFormatter`:
 

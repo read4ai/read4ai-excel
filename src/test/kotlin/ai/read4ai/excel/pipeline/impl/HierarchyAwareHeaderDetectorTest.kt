@@ -320,7 +320,7 @@ class HierarchyAwareHeaderDetectorTest : FunSpec({
         (tables.first().columnPaths.isNotEmpty()) shouldBe true
     }
 
-    test("balanced strategy does not produce column paths") {
+    test("balanced strategy now produces column paths for merged multi-row headers") {
         val bytes = createNestedMergeXlsx()
         val doc = ExcelParser.parse(bytes, pipeline = PipelineConfig.Strategy.balanced())
         doc.sheets.shouldNotBeEmpty()
@@ -328,8 +328,8 @@ class HierarchyAwareHeaderDetectorTest : FunSpec({
         val tables = doc.sheets[0].elements.filterIsInstance<Element.Table>()
         tables.shouldNotBeEmpty()
 
-        // balanced uses MergeAwareHeaderDetector, not hierarchy-aware
-        tables.first().columnPaths.shouldBeEmpty()
+        tables.first().columnPaths[1] shouldContainExactly listOf("실적", "상반기", "1분기")
+        tables.first().columnPaths[4] shouldContainExactly listOf("실적", "하반기", "4분기")
     }
 })
 

@@ -17,11 +17,12 @@ class SingleRowHeaderDetector : HeaderDetector {
             return HeaderInfo(headerRowCount = 0, headerRows = emptyList())
         }
 
-        val firstNonEmpty = cells.firstOrNull { row -> row.any { it.isNotBlank() } }
-        return if (firstNonEmpty != null) {
+        val firstNonEmptyIdx = cells.indexOfFirst { row -> row.any { it.isNotBlank() } }
+        return if (firstNonEmptyIdx >= 0) {
             HeaderInfo(
+                headerStartRow = firstNonEmptyIdx,
                 headerRowCount = 1,
-                headerRows = listOf(firstNonEmpty),
+                headerRows = listOf(cells[firstNonEmptyIdx]),
             )
         } else {
             HeaderInfo(headerRowCount = 0, headerRows = emptyList())

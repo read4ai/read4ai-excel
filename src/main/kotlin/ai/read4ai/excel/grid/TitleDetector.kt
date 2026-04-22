@@ -2,6 +2,8 @@ package ai.read4ai.excel.grid
 
 internal object TitleDetector {
 
+    private val bulletPrefixes = listOf("\u25A0", "\u25FE", "\u25AA", "\u2022", "\u00B7", "-")
+
     data class TitleDetection(
         val titleText: String,
         val remainingRows: List<List<String>>,
@@ -31,10 +33,7 @@ internal object TitleDetector {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return false
 
-        if (trimmed.startsWith("\u25FE") || trimmed.startsWith("\u25AA") || trimmed.startsWith("\u2022") || trimmed.startsWith("\u00B7") || trimmed.startsWith(
-                "-"
-            )
-        ) {
+        if (bulletPrefixes.any { trimmed.startsWith(it) }) {
             return true
         }
 
@@ -53,7 +52,6 @@ internal object TitleDetector {
     fun formatTitle(text: String): String {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return ""
-        val bulletPrefixes = listOf("\u25FE", "\u25AA", "\u2022", "\u00B7", "-")
         return if (bulletPrefixes.any { trimmed.startsWith(it) }) trimmed else "\u25FE $trimmed"
     }
 

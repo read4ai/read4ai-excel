@@ -49,11 +49,19 @@ sealed interface Element {
     data class Heading(
         val text: String,
         val level: Int = 2,
+        /** Row offset in the original sheet grid (0-based). 0 when unknown. */
+        val startRow: Int = 0,
+        /** Column offset in the original sheet grid (0-based). 0 when unknown. */
+        val startCol: Int = 0,
     ) : Element
 
     /** Standalone text content. */
     data class Text(
         val text: String,
+        /** Row offset in the original sheet grid (0-based). 0 when unknown. */
+        val startRow: Int = 0,
+        /** Column offset in the original sheet grid (0-based). 0 when unknown. */
+        val startCol: Int = 0,
     ) : Element
 
     /** An embedded image, optionally with base64 data or an AI-generated description. */
@@ -61,10 +69,18 @@ sealed interface Element {
         val base64: String?,
         val mimeType: String?,
         val description: String?,
+        /** Row offset in the original sheet grid (0-based). 0 when unknown. */
+        val startRow: Int = 0,
+        /** Column offset in the original sheet grid (0-based). 0 when unknown. */
+        val startCol: Int = 0,
     ) : Element
 
     /** A supplementary note or annotation. */
     data class Note(
         val text: String,
+        /** Row offset in the original sheet grid (0-based). 0 when unknown. */
+        val startRow: Int = 0,
+        /** Column offset in the original sheet grid (0-based). 0 when unknown. */
+        val startCol: Int = 0,
     ) : Element
 }

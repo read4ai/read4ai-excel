@@ -174,7 +174,7 @@ class PipelineTest : FunSpec({
                         grid = Grid(cells = listOf(listOf("A")), mergeRegions = emptyList(), rowCount = 1, colCount = 1),
                         startRow = 0, startCol = 0, gapFromPrevious = 0,
                     ),
-                    headerInfo = HeaderInfo(1, listOf(listOf("A"))),
+                    headerInfo = HeaderInfo(headerRowCount = 1, headerRows = listOf(listOf("A"))),
                     element = Element.Text(text = "first"),
                     isDeferred = false,
                 ),
@@ -183,7 +183,7 @@ class PipelineTest : FunSpec({
                         grid = Grid(cells = listOf(listOf("B")), mergeRegions = emptyList(), rowCount = 1, colCount = 1),
                         startRow = 5, startCol = 0, gapFromPrevious = 3,
                     ),
-                    headerInfo = HeaderInfo(1, listOf(listOf("B"))),
+                    headerInfo = HeaderInfo(headerRowCount = 1, headerRows = listOf(listOf("B"))),
                     element = Element.Text(text = "second"),
                     isDeferred = true,
                 ),
@@ -214,7 +214,7 @@ class PipelineTest : FunSpec({
                 startCol = 0,
                 gapFromPrevious = 0,
             )
-            val headerInfo = HeaderInfo(1, listOf(listOf("Name", "Age")))
+            val headerInfo = HeaderInfo(headerRowCount = 1, headerRows = listOf(listOf("Name", "Age")))
             val element = classifier.classify(segment, headerInfo)
             element.shouldBeInstanceOf<Element.Table>()
             element.shouldBeInstanceOf<Element.Table>().headerRowCount shouldBe 1
@@ -233,10 +233,50 @@ class PipelineTest : FunSpec({
                 startCol = 0,
                 gapFromPrevious = 0,
             )
-            val headerInfo = HeaderInfo(0, emptyList())
+            val headerInfo = HeaderInfo(headerRowCount = 0, headerRows = emptyList())
             val element = classifier.classify(segment, headerInfo)
             element.shouldBeInstanceOf<Element.Text>()
             element.shouldBeInstanceOf<Element.Text>().text shouldBe "Hello"
+        }
+
+        test("drops intro banner rows before detected header when building a table") {
+            val classifier = DefaultElementClassifier()
+            val segment = Segment(
+                grid = Grid(
+                    cells = listOf(
+                        listOf("2025년 10월 수수료 안내", "", "", ""),
+                        listOf("", "", "", ""),
+                        listOf("제품군", "6년", "", ""),
+                        listOf("", "단품요금", "신규결합", "기존결합"),
+                        listOf("정수기", "39900", "35900", "35900"),
+                    ),
+                    mergeRegions = emptyList(),
+                    rowCount = 5,
+                    colCount = 4,
+                ),
+                startRow = 10,
+                startCol = 0,
+                gapFromPrevious = 0,
+            )
+            val headerInfo = HeaderInfo(
+                headerStartRow = 2,
+                headerRowCount = 2,
+                headerRows = listOf(
+                    listOf("제품군", "6년", "", ""),
+                    listOf("", "단품요금", "신규결합", "기존결합"),
+                ),
+                columnPaths = mapOf(
+                    1 to listOf("6년", "단품요금"),
+                    2 to listOf("6년", "신규결합"),
+                    3 to listOf("6년", "기존결합"),
+                ),
+            )
+
+            val element = classifier.classify(segment, headerInfo)
+            element.shouldBeInstanceOf<Element.Table>()
+            element.shouldBeInstanceOf<Element.Table>().startRow shouldBe 12
+            element.rows.first().cells.map { it.value } shouldBe listOf("제품군", "6년", "", "")
+            element.rows.drop(2).first().cells.map { it.value } shouldBe listOf("정수기", "39900", "35900", "35900")
         }
     }
 

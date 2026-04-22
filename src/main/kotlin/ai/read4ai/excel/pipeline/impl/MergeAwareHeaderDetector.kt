@@ -27,8 +27,8 @@ class MergeAwareHeaderDetector : HeaderDetector {
             return HeaderInfo(headerRowCount = 0, headerRows = emptyList())
         }
 
-        // Find first non-empty row
-        val firstNonEmptyIdx = cells.indexOfFirst { row -> row.any { it.isNotBlank() } }
+        // Find header start row, skipping full-width intro/banner rows when a richer header follows.
+        val firstNonEmptyIdx = findHeaderStartRow(cells, segment.grid.mergeRegions)
         if (firstNonEmptyIdx < 0) {
             return HeaderInfo(headerRowCount = 0, headerRows = emptyList())
         }
@@ -60,14 +60,92 @@ class MergeAwareHeaderDetector : HeaderDetector {
             "Detected ${headerRows.size} header row(s) starting at row $firstNonEmptyIdx"
         }
 
+        val columnPaths = if (headerRows.size > 1) {
+            HierarchyAwareHeaderDetector().buildColumnPaths(
+                cells = cells,
+                mergeRegions = mergeRegions,
+                headerStartRow = firstNonEmptyIdx,
+                headerRowCount = headerRows.size,
+                colCount = colCount,
+            )
+        } else {
+            emptyMap()
+        }
+
         return HeaderInfo(
+            headerStartRow = firstNonEmptyIdx,
             headerRowCount = headerRows.size,
             headerRows = headerRows,
+            columnPaths = columnPaths,
         )
     }
 
+    internal fun findHeaderStartRow(
+        cells: List<List<String>>,
+        mergeRegions: List<MergeRegion>,
+    ): Int {
+        var currentIdx = cells.indexOfFirst { row -> row.any(::isMeaningfulCellValue) }
+        if (currentIdx < 0) return -1
+
+        val colCount = cells.maxOfOrNull { it.size } ?: 0
+        while (currentIdx >= 0 && isLikelyIntroBannerRow(cells, mergeRegions, currentIdx, colCount)) {
+            val nextIdx = nextNonEmptyRowIndex(cells, currentIdx + 1)
+            if (nextIdx < 0 || !isRicherHeaderCandidate(cells[nextIdx], cells[currentIdx])) {
+                break
+            }
+            currentIdx = nextIdx
+        }
+
+        return currentIdx
+    }
+
+    private fun nextNonEmptyRowIndex(cells: List<List<String>>, startIdx: Int): Int {
+        for (idx in startIdx until cells.size) {
+            if (cells[idx].any(::isMeaningfulCellValue)) return idx
+        }
+        return -1
+    }
+
+    private fun isLikelyIntroBannerRow(
+        cells: List<List<String>>,
+        mergeRegions: List<MergeRegion>,
+        rowIdx: Int,
+        colCount: Int,
+    ): Boolean {
+        val row = cells[rowIdx]
+        val meaningfulValues = row.filter(::isMeaningfulCellValue)
+        if (meaningfulValues.distinct().size != 1 || colCount < 4) return false
+
+        val fullWidthSpan = mergeRegions.any { region ->
+            region.firstRow == rowIdx &&
+                region.lastRow == rowIdx &&
+                region.firstCol == 0 &&
+                (region.lastCol - region.firstCol + 1) >= maxOf(4, colCount / 2)
+        }
+        if (fullWidthSpan) return true
+
+        val text = meaningfulValues.firstOrNull().orEmpty()
+        return text.length >= 40 || '\n' in text
+    }
+
+    private fun isRicherHeaderCandidate(
+        candidateRow: List<String>,
+        previousRow: List<String>,
+    ): Boolean {
+        val candidateNonBlank = candidateRow.count(::isMeaningfulCellValue)
+        val previousNonBlank = previousRow.count(::isMeaningfulCellValue)
+        return candidateNonBlank >= maxOf(3, previousNonBlank + 2)
+    }
+
+    private fun isMeaningfulCellValue(value: String): Boolean =
+        value.isNotBlank() && value !in MERGE_CONTINUATION_MARKERS
+
     private fun isVerticalMerge(region: MergeRegion): Boolean =
         region.firstRow != region.lastRow
+
+    companion object {
+        private val MERGE_CONTINUATION_MARKERS = setOf("<", "^", "^<")
+    }
 
     /**
      * Fill empty header cells with "header_N" placeholders.

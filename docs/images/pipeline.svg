@@ -8,8 +8,8 @@
   <rect x="100" y="22" width="65" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
   <text x="132" y="35" text-anchor="middle" fill="#4ade80" font-size="10">balanced</text>
   <text x="172" y="35" fill="#94a3b8" font-size="10">+</text>
-  <rect x="182" y="22" width="80" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
-  <text x="222" y="35" text-anchor="middle" fill="#4ade80" font-size="10">MD compact</text>
+  <rect x="182" y="22" width="50" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
+  <text x="207" y="35" text-anchor="middle" fill="#4ade80" font-size="10">JSON</text>
 
   <!-- ============ Strategy ============ -->
   <rect x="35" y="48" width="370" height="188" rx="8" fill="#14532d" stroke="#4ade80" stroke-width="1.5"/>
@@ -64,17 +64,24 @@
   <rect x="455" y="48" width="210" height="188" rx="8" fill="#14532d" stroke="#4ade80" stroke-width="1.5"/>
   <text x="470" y="70" fill="#4ade80" font-size="12" font-weight="bold">Format</text>
 
-  <!-- Format axis: Markdown / JSON -->
-  <text x="470" y="105" fill="#e2e8f0" font-size="10">Format</text>
-  <rect x="535" y="93" width="55" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
-  <text x="562" y="106" text-anchor="middle" fill="#4ade80" font-size="9">Markdown</text>
-  <rect x="597" y="93" width="50" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
-  <text x="622" y="106" text-anchor="middle" fill="#6b7280" font-size="9">JSON</text>
+  <!-- Format axis: JSON (default) / Markdown -->
+  <text x="470" y="95" fill="#e2e8f0" font-size="10">Format</text>
+  <rect x="535" y="83" width="50" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
+  <text x="560" y="96" text-anchor="middle" fill="#4ade80" font-size="9">JSON</text>
+  <rect x="592" y="83" width="65" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="624" y="96" text-anchor="middle" fill="#6b7280" font-size="9">Markdown</text>
 
   <!-- Layout axis: COMPACT / ROW_OBJECT -->
-  <text x="470" y="145" fill="#e2e8f0" font-size="10">Layout</text>
-  <rect x="535" y="133" width="55" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
-  <text x="562" y="146" text-anchor="middle" fill="#4ade80" font-size="9">COMPACT</text>
-  <rect x="597" y="133" width="65" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
-  <text x="629" y="146" text-anchor="middle" fill="#6b7280" font-size="9">ROW_OBJECT</text>
+  <text x="470" y="135" fill="#e2e8f0" font-size="10">Layout</text>
+  <rect x="535" y="123" width="55" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
+  <text x="562" y="136" text-anchor="middle" fill="#4ade80" font-size="9">COMPACT</text>
+  <rect x="597" y="123" width="65" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="629" y="136" text-anchor="middle" fill="#6b7280" font-size="9">ROW_OBJECT</text>
+
+  <!-- Assist axis: NONE / ON -->
+  <text x="470" y="175" fill="#e2e8f0" font-size="10">Assist</text>
+  <rect x="535" y="163" width="55" height="18" rx="3" fill="#4ade80" fill-opacity="0.15" stroke="#4ade80" stroke-width="1"/>
+  <text x="562" y="176" text-anchor="middle" fill="#4ade80" font-size="9">NONE</text>
+  <rect x="597" y="163" width="50" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="622" y="176" text-anchor="middle" fill="#6b7280" font-size="9">ON</text>
 </svg>

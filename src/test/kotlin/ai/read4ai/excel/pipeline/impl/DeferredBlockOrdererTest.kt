@@ -24,7 +24,7 @@ class DeferredBlockOrdererTest : FunSpec({
                 startCol = 0,
                 gapFromPrevious = gap,
             ),
-            headerInfo = HeaderInfo(0, emptyList()),
+            headerInfo = HeaderInfo(headerRowCount = 0, headerRows = emptyList()),
             element = Element.Text(text = text),
             isDeferred = false,
         )

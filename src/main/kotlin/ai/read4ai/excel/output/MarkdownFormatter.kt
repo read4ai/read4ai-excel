@@ -18,10 +18,14 @@ import ai.read4ai.excel.model.Sheet
  * Markdown only supports [Layout.COMPACT]; passing [Layout.ROW_OBJECT] throws
  * [UnsupportedOperationException].
  *
+ * The [assist] parameter optionally prepends a short schema block
+ * (`_Schema_` + bullets) to help an LLM interpret the output.
+ *
  * Example:
  * ```kotlin
  * val doc = ExcelParser.parse(bytes)
  * val md = MarkdownFormatter().format(doc)
+ * val annotated = MarkdownFormatter(assist = Assist.ON).format(doc)
  * ```
  *
  * @see DocumentFormatter
@@ -29,6 +33,8 @@ import ai.read4ai.excel.model.Sheet
 class MarkdownFormatter @JvmOverloads constructor(
     @OptIn(ExperimentalRead4ai::class)
     private val layout: Layout = Layout.COMPACT,
+    @OptIn(ExperimentalRead4ai::class)
+    private val assist: Assist = Assist.NONE,
 ) : DocumentFormatter {
 
     init {
@@ -45,12 +51,18 @@ class MarkdownFormatter @JvmOverloads constructor(
      *
      * @param includeFileName if true, prepend `# filename` heading
      */
+    @OptIn(ExperimentalRead4ai::class)
     fun toMarkdown(document: ExcelDocument, includeFileName: Boolean = false): String {
         return buildString {
             if (includeFileName) {
                 document.fileName?.let {
                     append("# ").append(it).append("\n\n")
                 }
+            }
+            if (assist == Assist.ON) {
+                append("_Prompt_\n")
+                append(PromptText.rootMarkdown(document))
+                append("\n\n")
             }
             if (document.sheets.isNotEmpty()) {
                 append("_Language: ").append(document.language).append("_\n\n")
@@ -64,14 +76,19 @@ class MarkdownFormatter @JvmOverloads constructor(
     }
 
     /** Convert a single [Sheet] to Markdown. */
+    @OptIn(ExperimentalRead4ai::class)
     fun sheetToMarkdown(sheet: Sheet): String {
         return buildString {
             append("## ").append(sheet.sheetName).append("\n\n")
+            if (assist == Assist.ON) {
+                append("_Prompt_\n")
+                append(PromptText.sheetMarkdown(sheet))
+                append("\n\n")
+            }
             if (sheet.mergeRegions.isNotEmpty()) {
                 append("_Merged: ")
                 append(sheet.mergeRegions.joinToString(", ") { formatMergeRange(it) })
-                append("_\n")
-                append("_[merged RxC] = spans R rows × C columns_\n\n")
+                append("_\n\n")
             }
             sheet.elements.forEachIndexed { index, element ->
                 if (index > 0) append("\n\n")

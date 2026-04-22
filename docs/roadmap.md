@@ -10,6 +10,12 @@
 - Java 17 baseline, pure Kotlin + Apache POI
 - [Live demo](https://huggingface.co/spaces/read4ai/read4ai) with Ask AI
 
+### v0.2.x — Formatter 3-axis output
+
+- Third axis **Assist** (`NONE` / `ON`, experimental): embeds a system-prompt-like `prompt` block at the document root and inside every sheet so an LLM can interpret the output without external instructions
+- Element position fields (`Element.Heading` / `Text` / `Note` / `Image` now carry `startRow`) let an LLM pinpoint where section titles sit in the sheet
+- Benchmark best updated to `balanced-rowobj` at 89.2% (v0.1.1: 86.3%)
+
 ---
 
 ## v1 — Stable release

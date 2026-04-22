@@ -321,4 +321,49 @@ class SpatialSegmenterTest : FunSpec({
             SpatialSegmenter.extractSingleCellText(rows) shouldBe null
         }
     }
+
+    context("isSingleColumnTextBlock") {
+
+        test("multiple text lines in the same column with whitespace returns true") {
+            val rows = listOf(
+                listOf("", "", "", "", "", "Notice line one with spaces"),
+                listOf("", "", "", "", "", "Another line, still text"),
+                listOf("", "", "", "", "", "Third line here"),
+            )
+            SpatialSegmenter.isSingleColumnTextBlock(rows) shouldBe true
+        }
+
+        test("single-column data codes (no whitespace) returns false") {
+            val rows = listOf(
+                listOf("", "a3b1c3d2e1f0"),
+                listOf("", "a3b2c7d0"),
+                listOf("", "a3b1c3d2e2f0"),
+            )
+            SpatialSegmenter.isSingleColumnTextBlock(rows) shouldBe false
+        }
+
+        test("two non-empty columns returns false") {
+            val rows = listOf(
+                listOf("A", "B"),
+                listOf("C", "D"),
+            )
+            SpatialSegmenter.isSingleColumnTextBlock(rows) shouldBe false
+        }
+
+        test("empty rows returns false") {
+            SpatialSegmenter.isSingleColumnTextBlock(emptyList()) shouldBe false
+        }
+    }
+
+    context("extractSingleColumnText") {
+
+        test("joins non-empty cells with newlines in row order") {
+            val rows = listOf(
+                listOf("", "", "first line"),
+                listOf("", "", ""),
+                listOf("", "", "second line"),
+            )
+            SpatialSegmenter.extractSingleColumnText(rows) shouldBe "first line\nsecond line"
+        }
+    }
 })

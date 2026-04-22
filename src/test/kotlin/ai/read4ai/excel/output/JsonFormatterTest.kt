@@ -63,6 +63,170 @@ class JsonFormatterTest : FunSpec({
         json shouldContain "\"cells\""
     }
 
+    test("compact layout includes resolvedHeaders for multi-row tables") {
+        val doc = ExcelDocument(
+            fileName = "headers.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Report",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("구분"), Cell("Q1", mergedRight = 1), Cell("^<"), Cell("Q2", mergedRight = 1), Cell("^<"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("^"), Cell("매출"), Cell("이익"), Cell("매출"), Cell("이익"))),
+                                Row(rowIndex = 2, cells = listOf(Cell("전자"), Cell("100"), Cell("10"), Cell("120"), Cell("12"))),
+                            ),
+                            headerRowCount = 2,
+                            columnPaths = mapOf(
+                                1 to listOf("Q1", "매출"),
+                                2 to listOf("Q1", "이익"),
+                                3 to listOf("Q2", "매출"),
+                                4 to listOf("Q2", "이익"),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"resolvedHeaders\""
+        json shouldContain "\"range\" : \"A1:G3\""
+        json shouldContain "\"endRow\" : 3"
+        json shouldContain "\"endCol\" : 7"
+        json shouldContain "\"headerEndRow\" : 2"
+        json shouldContain "\"bodyStartRow\" : 3"
+        json shouldContain "\"2\" : \"Q1 > 매출\""
+        json shouldContain "\"5\" : \"Q2 > 이익\""
+        json shouldContain "\"headerCells\""
+        json shouldContain "\"2\" : \"B2\""
+        json shouldContain "\"5\" : \"E2\""
+    }
+
+    test("compact layout cleans merge placeholders out of columnPaths and resolvedHeaders") {
+        val doc = ExcelDocument(
+            fileName = "placeholder-paths.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Report",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("제품"), Cell("Netflix"), Cell("Wavve"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("TV"), Cell("O"), Cell("X"))),
+                            ),
+                            headerRowCount = 1,
+                            columnPaths = mapOf(
+                                1 to listOf("<", "Netflix"),
+                                2 to listOf("^", "Wavve"),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"columnPaths\""
+        json shouldContain "\"1\" : [ \"Netflix\" ]"
+        json shouldContain "\"2\" : [ \"Wavve\" ]"
+        json shouldContain "\"2\" : \"Netflix\""
+        json shouldContain "\"3\" : \"Wavve\""
+        json.contains("< > Netflix") shouldBe false
+    }
+
+    test("compact layout omits prompt for simple single-header sheets") {
+        val json = JsonFormatter().format(sampleDocument())
+        json.contains("\"prompt\"") shouldBe false
+    }
+
+    test("compact layout includes cell coordinates for headings and text") {
+        val doc = ExcelDocument(
+            fileName = "coords.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Coords",
+                    elements = listOf(
+                        Element.Heading(text = "제목", startRow = 4, startCol = 1),
+                        Element.Text(text = "안내", startRow = 9, startCol = 3),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"cell\" : \"B5\""
+        json shouldContain "\"cell\" : \"D10\""
+    }
+
+    test("compact layout includes mergedRanges for merged cells") {
+        val doc = ExcelDocument(
+            fileName = "merge-table.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Merged",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(
+                                    rowIndex = 0,
+                                    cells = listOf(Cell("Header", mergedRight = 1, mergedDown = 1), Cell("<")),
+                                ),
+                                Row(
+                                    rowIndex = 1,
+                                    cells = listOf(Cell("^"), Cell("^<")),
+                                ),
+                            ),
+                            headerRowCount = 1,
+                            startRow = 4,
+                            startCol = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"mergedRanges\""
+        json shouldContain "\"mergedRangeDetails\""
+        json shouldContain "B5:C6"
+        json shouldContain "\"value\" : \"Header\""
+    }
+
+    test("compact layout skips resolvedHeaders for banner-like top rows") {
+        val doc = ExcelDocument(
+            fileName = "banner.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Banner",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("긴 안내 문구", mergedRight = 3))),
+                                Row(rowIndex = 1, cells = listOf(Cell(""), Cell(""), Cell(""), Cell(""))),
+                                Row(rowIndex = 2, cells = listOf(Cell("A"), Cell("B"), Cell("C"), Cell("D"))),
+                            ),
+                            headerRowCount = 2,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json.contains("\"resolvedHeaders\"") shouldBe false
+    }
+
     test("toRawJson produces valid non-blank output") {
         val json = JsonFormatter.toRawJson(sampleDocument())
         json.shouldNotBeBlank()
