@@ -108,6 +108,34 @@ _[merged RxC] = spans R rows × C columns_
 
 ---
 
+## Use cases
+
+### Excel to JSON for LLM pipelines
+
+Use `read4ai-excel` when spreadsheet output is going to an LLM and layout still matters.
+Typical cases:
+
+- merged headers that define column meaning
+- multiple tables in one sheet
+- notes and text blocks that explain table values
+- report-style spreadsheets that behave more like documents than dataframes
+
+### Merged-cell-heavy reports
+
+Financial reports, schedules, and operational workbooks often rely on merged regions to express grouping.
+The parser preserves those regions so downstream systems do not have to recover structure from flat cell coordinates alone.
+
+### Multi-table sheets
+
+Some workbooks place several logical tables in the same sheet.
+The default pipeline is designed to keep those blocks separate instead of flattening them into one ambiguous grid.
+
+### JVM pipelines that need composability
+
+If you need to swap segmentation, header detection, or output formatting, the pipeline is interface-based and can be composed without rewriting the whole parser.
+
+---
+
 ## Advanced
 
 ### Why composable?

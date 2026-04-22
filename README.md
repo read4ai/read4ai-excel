@@ -4,8 +4,8 @@
 
 # read4ai-excel
 
-> **A predictable, maintainable, and transparent Excel parser.** — [Try the demo](https://huggingface.co/spaces/read4ai/read4ai)  
-> **An intelligent pipeline that selects the optimal parsing strategy and AI-friendly format for your file.**
+> **An AI-friendly Excel parser for merged cells, multi-table sheets, and structured JSON output.** — [Try the demo](https://huggingface.co/spaces/read4ai/read4ai)  
+> **Built for spreadsheet understanding: predictable parsing, composable pipelines, and benchmarked LLM-facing output.**
 
 [![](https://jitpack.io/v/read4ai/read4ai-excel.svg)](https://jitpack.io/#read4ai/read4ai-excel)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -19,8 +19,18 @@
 </p>
 
 - [Getting Started](docs/guide.md)
+- [FAQ](docs/faq.md)
+- [read4ai-excel vs pandas](docs/comparisons/read4ai-vs-pandas.md)
 - [Benchmark](docs/benchmark/)
 - [Full Roadmap](docs/roadmap.md)
+
+`read4ai-excel` is a Kotlin Excel parser for AI and LLM workflows.
+It is designed for spreadsheets that behave like documents, not just tables:
+
+- merged cells and merged header bands
+- multi-row headers
+- side-by-side or stacked tables
+- text blocks, notes, and mixed table/text sheets
 
 ## The problem with Excel
 
@@ -42,10 +52,12 @@ Success is measured by whether an LLM can correctly answer questions about the d
 | GPT-5.4 mini      | 🏆 **81.7%**        | 78.3%      | 77.8%        | 73.9%        |
 
 The verification loop **parse → ask AI → measure → improve** runs on every change.
+AI is part of the workflow, but the benchmark harness is what makes improvements measurable, repeatable, and falsifiable.
 
 - Published [golden set](docs/benchmark/) with every evaluation result. [Try it yourself](https://huggingface.co/spaces/read4ai/read4ai)
 - A private hidden holdout prevents overfitting
 - Every fixture added makes the loop stronger
+- Harness engineering turns parser iteration into something you can verify, not just claim
 
 > Bug reports and fixture submissions directly strengthen the loop. [Submit your golden set](docs/benchmark/README.md)
 
@@ -62,6 +74,8 @@ Every axis — input pipeline *and* output format — is an interface you can sw
 
 - **Four pre-built strategies** — `balanced` (default) plus `complex` / `structural` / `scattered`.
 - **Experimental axes** — marked `@ExperimentalRead4ai`; opt-in is explicit.
+- Experimental methods can be applied without rewriting the whole parser, then benchmarked and kept only when they actually help
+- The long-term goal is not one rigid parser, but a system that can choose the right pipeline for each spreadsheet type
 
 > Custom strategies plug in without forking the library. [Compose your own](docs/guide.md)
 
@@ -69,5 +83,5 @@ Every axis — input pipeline *and* output format — is an interface you can sw
 
 - **Stable public API** — interfaces and models follow semantic versioning. Breaking changes bump the major version, not a silent release.
 - **Deterministic output** — same file + same strategy → same bytes. No hidden global state, no runtime magic.
-- **No framework lock-in** — plain Kotlin library. No Spring, no DI container, no annotation processors.
+- **No framework lock-in** — plain JVM library for Kotlin and Java. No Spring, no DI container, no annotation processors.
 - **AI-friendly repo** — docs in Markdown, code organized so AI agents can reason about it as easily as humans.
