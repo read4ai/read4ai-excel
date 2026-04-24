@@ -7,11 +7,10 @@
 ```kotlin
 repositories {
     mavenCentral()
-    maven { url = uri("https://jitpack.io") }
 }
 
 dependencies {
-    implementation("com.github.read4ai:read4ai-excel:v0.3.0")
+    implementation("io.github.hyune-c:read4ai-excel:0.3.1")
 }
 ```
 
@@ -20,28 +19,20 @@ dependencies {
 ```groovy
 repositories {
     mavenCentral()
-    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'com.github.read4ai:read4ai-excel:v0.3.0'
+    implementation 'io.github.hyune-c:read4ai-excel:0.3.1'
 }
 ```
 
 **Maven:**
 
 ```xml
-<repositories>
-  <repository>
-    <id>jitpack.io</id>
-    <url>https://jitpack.io</url>
-  </repository>
-</repositories>
-
 <dependency>
-  <groupId>com.github.read4ai</groupId>
+  <groupId>io.github.hyune-c</groupId>
   <artifactId>read4ai-excel</artifactId>
-  <version>v0.3.0</version>
+  <version>0.3.1</version>
 </dependency>
 ```
 

@@ -4,15 +4,20 @@
 
 # read4ai-excel
 
-> **A structure-preserving Excel parser for merged cells, multi-table sheets, and structured JSON output.** — [Try the demo](https://huggingface.co/spaces/read4ai/read4ai)
-> **Built for spreadsheet understanding: predictable parsing, composable recipes, and benchmarked downstream Q&A.**
+> **A structure-preserving Excel parser for merged cells, multi-table sheets, and structured JSON output.**
+>
+> Built for spreadsheet understanding: predictable parsing, composable recipes, and measurable Q&A.
+>
+> [Try the demo](https://huggingface.co/spaces/read4ai/read4ai)
 
-[![](https://jitpack.io/v/read4ai/read4ai-excel.svg)](https://jitpack.io/#read4ai/read4ai-excel)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3-blue.svg)](https://kotlinlang.org)
 [![Java](https://img.shields.io/badge/Java-17%2B-green.svg)](docs/guide.md)
-[![GitHub](https://img.shields.io/badge/Contact-GitHub-181717?logo=github)](https://github.com/Hyune-c)
-[![LinkedIn](https://img.shields.io/badge/Contact-LinkedIn-0A66C2?logo=linkedin)](https://www.linkedin.com/in/b30b971a0/)
+[![Latest Maven Central](https://img.shields.io/badge/Latest%20Maven%20Central-v0.3.1-2ea44f.svg)](https://central.sonatype.com/artifact/io.github.hyune-c/read4ai-excel/0.3.1)
+[![Demo](https://img.shields.io/badge/demo-Hugging%20Face-ffcc4d.svg)](https://huggingface.co/spaces/read4ai/read4ai)
+<br>
+[![GitHub](https://img.shields.io/badge/GitHub-Hyune--c-181717?logo=github)](https://github.com/Hyune-c)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Hyune--c-0A66C2?logo=linkedin)](https://www.linkedin.com/in/b30b971a0/)
 
 <p align="center">
   <img src="docs/images/roadmap.svg" alt="Roadmap" width="100%">

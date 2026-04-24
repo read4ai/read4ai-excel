@@ -2,6 +2,7 @@ plugins {
     kotlin("jvm") version "2.3.20"
     `java-library`
     `maven-publish`
+    signing
 }
 
 val poiVersion: String by project
@@ -10,13 +11,15 @@ val kotlinLoggingVersion: String by project
 val jacksonVersion: String by project
 val kotestVersion: String by project
 
-group = "ai.read4ai"
-version = "0.3.0"
+group = "io.github.hyune-c"
+version = "0.3.1"
 
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+    withSourcesJar()
+    withJavadocJar()
 }
 
 repositories {
@@ -55,6 +58,72 @@ publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+            artifactId = "read4ai-excel"
+
+            pom {
+                name.set("read4ai-excel")
+                description.set("A structure-preserving Excel parser for merged cells, multi-table sheets, and structured JSON output.")
+                url.set("https://github.com/read4ai/read4ai-excel")
+
+                licenses {
+                    license {
+                        name.set("Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+
+                developers {
+                    developer {
+                        id.set("Hyune-c")
+                        name.set("Hyune-c")
+                        url.set("https://github.com/Hyune-c")
+                    }
+                }
+
+                scm {
+                    connection.set("scm:git:https://github.com/read4ai/read4ai-excel.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/read4ai/read4ai-excel.git")
+                    url.set("https://github.com/read4ai/read4ai-excel")
+                }
+            }
         }
+    }
+
+    repositories {
+        maven {
+            name = "release"
+            val repositoryUrl = providers.gradleProperty("mavenRepositoryUrl")
+                .orElse(providers.environmentVariable("MAVEN_REPOSITORY_URL"))
+                .orNull
+            url = uri(repositoryUrl ?: layout.buildDirectory.dir("maven-repo").get().asFile)
+
+            val repositoryUsername = providers.gradleProperty("mavenRepositoryUsername")
+                .orElse(providers.environmentVariable("MAVEN_REPOSITORY_USERNAME"))
+                .orNull
+            val repositoryPassword = providers.gradleProperty("mavenRepositoryPassword")
+                .orElse(providers.environmentVariable("MAVEN_REPOSITORY_PASSWORD"))
+                .orNull
+
+            if (repositoryUrl != null && repositoryUsername != null && repositoryPassword != null) {
+                credentials {
+                    username = repositoryUsername
+                    password = repositoryPassword
+                }
+            }
+        }
+    }
+}
+
+signing {
+    val signingKey = providers.gradleProperty("signingInMemoryKey")
+        .orElse(providers.environmentVariable("ORG_GRADLE_PROJECT_signingInMemoryKey"))
+        .orNull
+    val signingPassword = providers.gradleProperty("signingInMemoryKeyPassword")
+        .orElse(providers.environmentVariable("ORG_GRADLE_PROJECT_signingInMemoryKeyPassword"))
+        .orNull
+
+    if (signingKey != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications["maven"])
     }
 }
