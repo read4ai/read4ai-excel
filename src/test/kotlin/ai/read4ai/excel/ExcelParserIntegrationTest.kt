@@ -3,7 +3,7 @@ package ai.read4ai.excel
 import ai.read4ai.excel.model.Element
 import ai.read4ai.excel.output.JsonFormatter
 import ai.read4ai.excel.output.MarkdownFormatter
-import ai.read4ai.excel.pipeline.PipelineConfig
+import ai.read4ai.excel.strategy.StrategyConfig
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldHaveAtLeastSize
 import io.kotest.matchers.collections.shouldNotBeEmpty
@@ -217,11 +217,11 @@ class ExcelParserIntegrationTest : FunSpec({
     test("complex XLSX with merged cells preserves merge markers or values") {
         val bytes = createComplexXlsx()
         // Use simple preset for this structural test — balanced may classify differently
-        val doc = ExcelParser.parse(bytes, pipeline = PipelineConfig(
-            segmenter = ai.read4ai.excel.pipeline.impl.SimpleSegmenter(),
-            headerDetector = ai.read4ai.excel.pipeline.impl.SingleRowHeaderDetector(),
-            blockOrderer = ai.read4ai.excel.pipeline.impl.SequentialBlockOrderer(),
-            elementClassifier = ai.read4ai.excel.pipeline.impl.DefaultElementClassifier(),
+        val doc = ExcelParser.parse(bytes, strategy = StrategyConfig(
+            segmenter = ai.read4ai.excel.strategy.impl.SimpleSegmenter(),
+            headerDetector = ai.read4ai.excel.strategy.impl.SingleRowHeaderDetector(),
+            blockOrderer = ai.read4ai.excel.strategy.impl.SequentialBlockOrderer(),
+            elementClassifier = ai.read4ai.excel.strategy.impl.DefaultElementClassifier(),
         ))
 
         val allTexts = doc.sheets[0].elements.flatMap { el ->

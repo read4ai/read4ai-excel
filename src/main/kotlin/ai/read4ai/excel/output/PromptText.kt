@@ -7,7 +7,7 @@ import ai.read4ai.excel.model.ExcelDocument
 import ai.read4ai.excel.model.Sheet
 
 /**
- * Short, format-aware system-prompt-like text used by [Assist.ON].
+ * Short, format-aware output guidance used by [Assist.ON].
  *
  * Two layers:
  * - **root** describes the whole envelope (sheets array, language)
@@ -96,6 +96,8 @@ internal object PromptText {
         """- `startRow`/`startCol` are 1-based Excel row/column numbers.
 - `cell` is the anchor cell of a heading/text block.
 - Tables may include `range`, `endRow`/`endCol`, `headerRowCount`, `headerEndRow`, and `bodyStartRow` metadata.
+- `leadingBlankColCount`/`sheetColCount` describe offset tables; leading blanks in `rows` preserve sheet alignment.
+- `rowNumbers` gives absolute Excel row numbers when row identity matters; `rowAnchors` names representative body rows.
 - `headerCells` maps each resolved header column to the header cell where that label is anchored."""
 
     private const val SHEET_JSON_COMPACT_MERGE =

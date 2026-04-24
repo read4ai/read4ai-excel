@@ -2,26 +2,33 @@
 
 ## v0 — Foundation (experimental)
 
+### v0.3.0 — Strategy naming + default uplift
+
+- Breaking terminology/API rename: `pipeline` -> `strategy`, `PipelineConfig` -> `StrategyConfig`
+- Strategy package and public examples aligned to the new recipe / strategy / output vocabulary
+- Default recipe updated to `balanced-json`, with selective row identity and offset-table metadata
+- Benchmark total improved to `92.1%` overall
+
+### v0.2.x — Output recipes
+
+- Output recipes: type (JSON / Markdown) + layout (`COMPACT` / `ROW_OBJECT`), with **Assist** (`NONE` / `ON`, experimental) as an optional guidance modifier
+- Element position fields (`Element.Heading` / `Text` / `Note` / `Image` now carry `startRow`) let an LLM pinpoint where section titles sit in the sheet
+- Benchmark best updated to `balanced-rowobj` at 89.2% (v0.1.1: 86.3%)
+
 ### v0.1.x — Initial release
 
-- Composable pipeline (6 input axes + pluggable `DocumentFormatter`)
-- Default `balanced` strategy verified on a public golden set
+- Composable strategy stages + pluggable `DocumentFormatter`
+- `balanced` strategy verified on a public golden set
 - Language detection (KO / EN / JA)
 - Java 17 baseline, pure Kotlin + Apache POI
 - [Live demo](https://huggingface.co/spaces/read4ai/read4ai) with Ask AI
-
-### v0.2.x — Formatter 3-axis output
-
-- Third axis **Assist** (`NONE` / `ON`, experimental): embeds a system-prompt-like `prompt` block at the document root and inside every sheet so an LLM can interpret the output without external instructions
-- Element position fields (`Element.Heading` / `Text` / `Note` / `Image` now carry `startRow`) let an LLM pinpoint where section titles sit in the sheet
-- Benchmark best updated to `balanced-rowobj` at 89.2% (v0.1.1: 86.3%)
 
 ---
 
 ## v1 — Stable release
 
 - Stable public API with semantic versioning guarantees
-- One well-tested default strategy (balanced), continuously improved
+- One well-tested zero-config strategy (`balanced`), continuously improved
 - Multi-JVM target: jvm17 (default) + jvm21 + jvm25
 
 ## v2 — Multi-model optimization + adaptive parsing
@@ -43,7 +50,7 @@
 
 The following are intentionally excluded from this library's responsibility:
 
-- **Chunking and embedding** — downstream knowledge pipeline concerns, not parsing
+- **Chunking and embedding** — downstream knowledge workflow concerns, not parsing
 - **Domain-specific semantics extraction**
     - detecting document type (invoice, VE analysis, financial report)
     - extracting business logic (O/X flags, cost aggregation). The parser provides structure; the AI interprets meaning

@@ -16,10 +16,10 @@ import ai.read4ai.excel.model.Sheet
  * - Sheet-level merge region summary
  *
  * Markdown only supports [Layout.COMPACT]; passing [Layout.ROW_OBJECT] throws
- * [UnsupportedOperationException].
+ * [IllegalArgumentException].
  *
- * The [assist] parameter optionally prepends a short schema block
- * (`_Schema_` + bullets) to help an LLM interpret the output.
+ * The [assist] parameter optionally prepends a short output-guidance block
+ * (`_Prompt_` + bullets) to help an LLM interpret the output.
  *
  * Example:
  * ```kotlin

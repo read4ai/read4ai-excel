@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 230" font-family="system-ui, -apple-system, sans-serif">
+  <!-- Background -->
+  <rect width="700" height="230" rx="12" fill="#0f172a"/>
+
+  <!-- Outer box -->
+  <rect x="15" y="12" width="670" height="206" rx="10" fill="none" stroke="#4ade80" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="35" y="35" fill="#4ade80" font-size="14" font-weight="bold">Recipe</text>
+  <rect x="105" y="22" width="72" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="141" y="35" text-anchor="middle" fill="#fde68a" font-size="10">balanced</text>
+  <text x="187" y="35" fill="#94a3b8" font-size="10">+</text>
+  <rect x="197" y="22" width="95" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="244" y="35" text-anchor="middle" fill="#fde68a" font-size="10">JSON compact</text>
+  <rect x="303" y="22" width="70" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="338" y="35" text-anchor="middle" fill="#fde68a" font-size="10">assist off</text>
+
+  <!-- Strategy -->
+  <rect x="35" y="52" width="300" height="150" rx="8" fill="#14532d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="50" y="74" fill="#4ade80" font-size="12" font-weight="bold">Strategy</text>
+  <rect x="122" y="60" width="72" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="158" y="73" text-anchor="middle" fill="#fde68a" font-size="9">balanced</text>
+
+  <text x="50" y="102" fill="#e2e8f0" font-size="9">Segmenter</text>
+  <rect x="130" y="90" width="55" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="157" y="103" text-anchor="middle" fill="#fde68a" font-size="9">Graph</text>
+  <rect x="192" y="90" width="70" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="227" y="103" text-anchor="middle" fill="#6b7280" font-size="9">ThreeLevel</text>
+
+  <text x="50" y="127" fill="#e2e8f0" font-size="9">Header</text>
+  <rect x="130" y="115" width="80" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="170" y="128" text-anchor="middle" fill="#fde68a" font-size="9">MergeAware</text>
+  <rect x="217" y="115" width="70" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="252" y="128" text-anchor="middle" fill="#6b7280" font-size="9">SingleRow</text>
+
+  <text x="50" y="152" fill="#e2e8f0" font-size="9">Block order</text>
+  <rect x="130" y="140" width="65" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="162" y="153" text-anchor="middle" fill="#fde68a" font-size="9">Deferred</text>
+  <rect x="202" y="140" width="75" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="239" y="153" text-anchor="middle" fill="#6b7280" font-size="9">Sequential</text>
+
+  <text x="50" y="193" fill="#6b7280" font-size="9">Experimental: complex · structural · scattered</text>
+
+  <!-- Plus -->
+  <text x="350" y="135" text-anchor="middle" fill="#4ade80" font-size="22" font-weight="bold">+</text>
+
+  <!-- Output -->
+  <rect x="365" y="52" width="300" height="150" rx="8" fill="#14532d" stroke="#4ade80" stroke-width="1.5"/>
+  <text x="380" y="74" fill="#4ade80" font-size="12" font-weight="bold">Output</text>
+  <rect x="460" y="60" width="95" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="507" y="73" text-anchor="middle" fill="#fde68a" font-size="9">JSON compact</text>
+
+  <text x="380" y="102" fill="#e2e8f0" font-size="9">Type</text>
+  <rect x="455" y="90" width="50" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="480" y="103" text-anchor="middle" fill="#fde68a" font-size="9">JSON</text>
+  <rect x="512" y="90" width="65" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="544" y="103" text-anchor="middle" fill="#6b7280" font-size="9">Markdown</text>
+
+  <text x="380" y="127" fill="#e2e8f0" font-size="9">Layout</text>
+  <rect x="455" y="115" width="58" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="484" y="128" text-anchor="middle" fill="#fde68a" font-size="9">COMPACT</text>
+  <rect x="520" y="115" width="82" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="561" y="128" text-anchor="middle" fill="#6b7280" font-size="9">ROW_OBJECT</text>
+
+  <text x="380" y="152" fill="#e2e8f0" font-size="9">Assist</text>
+  <rect x="455" y="140" width="50" height="18" rx="3" fill="#f59e0b" fill-opacity="0.32" stroke="#fbbf24" stroke-width="1"/>
+  <text x="480" y="153" text-anchor="middle" fill="#fde68a" font-size="9">OFF</text>
+  <rect x="512" y="140" width="40" height="18" rx="3" fill="#0f172a" stroke="#4b5563" stroke-width="1"/>
+  <text x="532" y="153" text-anchor="middle" fill="#6b7280" font-size="9">ON</text>
+
+</svg>

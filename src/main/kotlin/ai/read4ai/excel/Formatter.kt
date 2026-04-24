@@ -7,14 +7,16 @@ import ai.read4ai.excel.output.Layout
 import ai.read4ai.excel.output.MarkdownFormatter
 
 /**
- * Convenience facade for converting an [ExcelDocument] to AI-friendly text.
+ * Convenience facade for converting an [ExcelDocument] to structure-preserving text.
  *
- * Three independent axes:
- * - **Format**: JSON ([toJson]) or Markdown ([toMarkdown])
+ * A formatter recipe is mainly:
+ * - **Output type**: JSON ([toJson]) or Markdown ([toMarkdown])
  * - **Layout**: [Layout.COMPACT] (default) or [Layout.ROW_OBJECT] (JSON only, experimental)
- * - **Assist**: [Assist.NONE] (default) or [Assist.ON] (embeds a system-prompt-like
- *   `prompt` block at the document root and inside every sheet so an LLM can
- *   interpret the payload without external instructions)
+ *
+ * [Assist] is an optional guidance modifier, not a separate data format. When
+ * enabled, it embeds an output-guidance `prompt` block at the document root
+ * and inside every sheet so an LLM can interpret the payload without external
+ * instructions.
  *
  * Delegates to [JsonFormatter] and [MarkdownFormatter] which implement the
  * [ai.read4ai.excel.output.DocumentFormatter] interface. For full control,

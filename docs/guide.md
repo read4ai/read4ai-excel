@@ -11,7 +11,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.read4ai:read4ai-excel:v0.2.0")
+    implementation("com.github.read4ai:read4ai-excel:v0.3.0")
 }
 ```
 
@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.read4ai:read4ai-excel:v0.2.0'
+    implementation 'com.github.read4ai:read4ai-excel:v0.3.0'
 }
 ```
 
@@ -41,7 +41,7 @@ dependencies {
 <dependency>
   <groupId>com.github.read4ai</groupId>
   <artifactId>read4ai-excel</artifactId>
-  <version>v0.2.0</version>
+  <version>v0.3.0</version>
 </dependency>
 ```
 
@@ -110,7 +110,7 @@ _[merged RxC] = spans R rows × C columns_
 
 ## Use cases
 
-### Excel to JSON for LLM pipelines
+### Excel to JSON for LLM workflows
 
 Use `read4ai-excel` when spreadsheet output is going to an LLM and layout still matters.
 Typical cases:
@@ -128,11 +128,11 @@ The parser preserves those regions so downstream systems do not have to recover 
 ### Multi-table sheets
 
 Some workbooks place several logical tables in the same sheet.
-The default pipeline is designed to keep those blocks separate instead of flattening them into one ambiguous grid.
+The zero-config `balanced` strategy is designed to keep those blocks separate instead of flattening them into one ambiguous grid.
 
-### JVM pipelines that need composability
+### JVM apps that need composability
 
-If you need to swap segmentation, header detection, or output formatting, the pipeline is interface-based and can be composed without rewriting the whole parser.
+If you need to swap segmentation, header detection, block ordering, or output formatting, the parser is interface-based and can be composed without rewriting the whole library.
 
 ---
 
@@ -140,18 +140,18 @@ If you need to swap segmentation, header detection, or output formatting, the pi
 
 ### Why composable?
 
-Excel doesn't have a single right parser. A financial report, a scattered data export, and a report with merged headers each reward different heuristics. Instead of forcing one algorithm, read4ai-excel exposes the parsing pipeline as **interfaces** you can swap.
+Excel doesn't have a single right parser. A financial report, a scattered data export, and a report with merged headers each reward different heuristics. Instead of forcing one algorithm, read4ai-excel exposes parsing strategy stages as **interfaces** you can swap.
 
-`PipelineConfig` holds six input-stage interfaces and `DocumentFormatter` covers output. Strategies are just pre-built combinations — no magic, just convenience.
+`StrategyConfig` carries the strategy-side composition. `DocumentFormatter` covers output. A recipe is the user-facing composition of **strategy + output**, with `Assist` as an optional output modifier.
 
 ### Strategies (pre-built combinations)
 
 ```kotlin
 // Use a built-in strategy
-val doc = ExcelParser.parse(path, pipeline = PipelineConfig.Strategy.complex())
+val doc = ExcelParser.parse(path, strategy = StrategyConfig.complex())
 
 // Compose your own
-val doc = ExcelParser.parse(path, pipeline = PipelineConfig(
+val doc = ExcelParser.parse(path, strategy = StrategyConfig(
     segmenter = ThreeLevelSegmenter(),
     headerDetector = SingleRowHeaderDetector(),
 ))
@@ -159,7 +159,7 @@ val doc = ExcelParser.parse(path, pipeline = PipelineConfig(
 
 | Strategy | Segmenter | HeaderDetector | BlockOrderer | Best for |
 |----------|-----------|----------------|--------------|----------|
-| **balanced** (default) | Graph | MergeAware | Deferred | Most files |
+| **balanced** | Graph | MergeAware | Deferred | Most files |
 | complex ⚠️ | Graph | HierarchyAware | Deferred | Multi-level merged headers |
 | structural ⚠️ | ThreeLevel | MergeAware | Sequential | Simple structure |
 | scattered ⚠️ | Graph (no merge) | SingleRow | Sequential | Scattered data islands |
@@ -168,57 +168,66 @@ val doc = ExcelParser.parse(path, pipeline = PipelineConfig(
 
 ```kotlin
 @OptIn(ExperimentalRead4ai::class)
-val doc = ExcelParser.parse(path, pipeline = PipelineConfig.Strategy.complex())
+val doc = ExcelParser.parse(path, strategy = StrategyConfig.complex())
 ```
 
-### Pipeline axes (6 interfaces)
+### Strategy axes
 
-All six input stages are interfaces. Implement one and pass it to `PipelineConfig`. **Bold** = balanced default.
+The meaningful strategy choices are the stages that usually change benchmark behavior. Implement one and pass it to `StrategyConfig`. **Bold** = `balanced`.
 
 | Axis | Interface | Options |
 |------|-----------|---------|
-| 1. Workbook read | `WorkbookReader` | **PoiWorkbookReader** |
-| 2. Grid extraction | `GridExtractor` | **DefaultGridExtractor** |
-| 3. Segmentation | `Segmenter` | **GraphSegmenter**, ThreeLevelSegmenter, SimpleSegmenter |
-| 4. Header detection | `HeaderDetector` | **MergeAwareHeaderDetector**, HierarchyAwareHeaderDetector, SingleRowHeaderDetector |
-| 5. Block ordering | `BlockOrderer` | **DeferredBlockOrderer**, SequentialBlockOrderer |
-| 6. Element classification | `ElementClassifier` | **DefaultElementClassifier** |
+| Segmentation | `Segmenter` | **GraphSegmenter**, ThreeLevelSegmenter, SimpleSegmenter |
+| Header detection | `HeaderDetector` | **MergeAwareHeaderDetector**, HierarchyAwareHeaderDetector, SingleRowHeaderDetector |
+| Block ordering | `BlockOrderer` | **DeferredBlockOrderer**, SequentialBlockOrderer |
 
-### Output: DocumentFormatter
+Supporting input stages are also interfaces, but they are infrastructure hooks rather than strategy axes in the current recipe model:
 
-Output has three independent axes — **format** (JSON / Markdown), **layout** (`COMPACT` / `ROW_OBJECT`), and **assist** (`NONE` / `ON`):
+| Stage | Interface | Current option |
+|-------|-----------|----------------|
+| Workbook read | `WorkbookReader` | PoiWorkbookReader |
+| Grid extraction | `GridExtractor` | DefaultGridExtractor |
+| Element classification | `ElementClassifier` | DefaultElementClassifier |
+
+### Output recipes
+
+Output recipes mainly combine **type** (JSON / Markdown) and **layout** (`COMPACT` / `ROW_OBJECT`).
+`Assist` (`NONE` / `ON`) is an optional guidance modifier, not a separate data format:
 
 ```kotlin
 val doc = ExcelParser.parse(path)
 
-// JSON × layout (assist defaults to NONE)
-val compact = JsonFormatter().format(doc)                       // COMPACT (default)
+// JSON × layout (assist starts as NONE)
+val compact = JsonFormatter().format(doc)                       // COMPACT
 val rowObject = JsonFormatter(Layout.ROW_OBJECT).format(doc)    // ROW_OBJECT (experimental)
 val md = MarkdownFormatter().format(doc)
 
-// Assist ON — embeds a short system-prompt-like `prompt` field/block at
+// Assist ON — embeds short output guidance at
 // the document root and inside every sheet so an LLM can interpret the
 // payload without external instructions
 val annotated = JsonFormatter(assist = Assist.ON).format(doc)
 val annotatedMd = MarkdownFormatter(assist = Assist.ON).format(doc)
 
-// Formatter facade (3-axis form)
+// Formatter facade
 val json = Formatter.toJson(doc, Layout.COMPACT, Assist.ON)
 val mdAlt = Formatter.toMarkdown(doc, Layout.COMPACT, Assist.ON)
 ```
 
-Supported combinations:
+Supported output recipes:
 
-| Format × Layout × Assist | `COMPACT × NONE` | `COMPACT × ON` | `ROW_OBJECT × NONE` | `ROW_OBJECT × ON` |
-|--------------------------|------------------|----------------|---------------------|-------------------|
-| JSON                     | ✅ default        | ✅              | ⚠️ experimental      | ⚠️ experimental    |
-| Markdown                 | ✅ default        | ✅              | ❌ unsupported       | ❌ unsupported     |
+| Type | Layout | Assist | Status |
+|------|--------|--------|--------|
+| JSON | COMPACT | NONE / ON | stable |
+| JSON | ROW_OBJECT | NONE / ON | experimental |
+| Markdown | COMPACT | NONE / ON | stable |
+| Markdown | ROW_OBJECT | NONE / ON | unsupported |
 
-`Assist.ON` adds tokens (~100 per sheet) — enable it when you feed the output directly to an LLM and want the schema explained in-band. Use `Assist.NONE` for minimal-token pipelines where you control the prompt separately.
+`Assist.ON` adds tokens (~100 per sheet) — enable it when you feed the output directly to an LLM and want output-reading guidance in-band. Use `Assist.NONE` for minimal-token workflows where you control the prompt separately.
 
-To add your own format, implement `DocumentFormatter`:
+There is no built-in CSV formatter right now. If you want one, implement `DocumentFormatter` yourself:
 
 ```kotlin
+// Example custom formatter
 class CsvRowsFormatter : DocumentFormatter {
     override fun format(document: ExcelDocument): String = buildString {
         document.sheets.flatMap { it.elements }
@@ -236,16 +245,16 @@ val csv = CsvRowsFormatter().format(doc)
 
 ### Building your own strategy
 
-Implement any axis, plug it in:
+Implement a strategy axis, plug it in:
 
 ```kotlin
 class MySegmenter : Segmenter {
     override fun segment(grid: Grid): List<Segment> = /* ... */
 }
 
-val doc = ExcelParser.parse(path, pipeline = PipelineConfig(
+val doc = ExcelParser.parse(path, strategy = StrategyConfig(
     segmenter = MySegmenter(),
-    // other axes keep their defaults
+    // other stages keep their configured defaults
 ))
 ```
 
@@ -262,7 +271,7 @@ val prompt = AssistPrompt.from(doc)
 
 ```kotlin
 // image handling
-val config = Config(imageOutput = Config.ImageOutput.BASE64)
+val config = ExcelConfig(imageOutput = ExcelConfig.ImageOutput.BASE64)
 val doc = ExcelParser.parse(bytes, config = config)
 
 // CSV with explicit delimiter (auto-detected by default)

@@ -165,6 +165,167 @@ class JsonFormatterTest : FunSpec({
         json shouldContain "\"cell\" : \"D10\""
     }
 
+    test("compact layout includes row identity for single-column tables") {
+        val doc = ExcelDocument(
+            fileName = "row-identity.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Rows",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Code"))),
+                                Row(rowIndex = 3, cells = listOf(Cell("A-100"))),
+                                Row(rowIndex = 4, cells = listOf(Cell("B-200"))),
+                            ),
+                            headerRowCount = 1,
+                            startRow = 9,
+                            startCol = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"rowNumbers\" : [ 10, 13, 14 ]"
+        json shouldContain "\"rowAnchors\""
+        json shouldContain "\"row\" : 13"
+        json shouldContain "\"cell\" : \"B13\""
+        json shouldContain "\"label\" : \"A-100\""
+    }
+
+    test("compact layout describes leading blank columns") {
+        val doc = ExcelDocument(
+            fileName = "offset-table.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Offset",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Code"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("A-100"))),
+                            ),
+                            headerRowCount = 1,
+                            startCol = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"range\" : \"B1:B2\""
+        json shouldContain "\"colCount\" : 1"
+        json shouldContain "\"leadingBlankColCount\" : 1"
+        json shouldContain "\"sheetColCount\" : 2"
+    }
+
+    test("compact layout includes row identity for narrow vertically merged tables") {
+        val doc = ExcelDocument(
+            fileName = "merged-row-identity.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "MergedRows",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Group"), Cell("Model"), Cell("Part"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("42", mergedDown = 1), Cell("42LB5600"), Cell("P1"))),
+                                Row(rowIndex = 2, cells = listOf(Cell("^"), Cell("42LF5600"), Cell(""))),
+                            ),
+                            headerRowCount = 1,
+                            startRow = 4,
+                            startCol = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"rowNumbers\" : [ 5, 6, 7 ]"
+        json shouldContain "\"label\" : \"42LF5600\""
+    }
+
+    test("compact layout omits row identity for ordinary two-column tables") {
+        val doc = ExcelDocument(
+            fileName = "ordinary.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Ordinary",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Code"), Cell("Value"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("A-100"), Cell("ready"))),
+                            ),
+                            headerRowCount = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json.contains("\"rowNumbers\"") shouldBe false
+        json.contains("\"rowAnchors\"") shouldBe false
+    }
+
+    test("compact layout omits row identity for large tables") {
+        val rows = (0..200).map { rowIndex ->
+            Row(rowIndex = rowIndex, cells = listOf(Cell("R$rowIndex"), Cell("V$rowIndex")))
+        }
+        val doc = ExcelDocument(
+            fileName = "large.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Large",
+                    elements = listOf(Element.Table(rows = rows, headerRowCount = 1)),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json.contains("\"rowNumbers\"") shouldBe false
+        json.contains("\"rowAnchors\"") shouldBe false
+    }
+
+    test("compact layout omits row identity for wide tables") {
+        val row = Row(rowIndex = 0, cells = (1..13).map { Cell("C$it") })
+        val doc = ExcelDocument(
+            fileName = "wide.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Wide",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(row, Row(rowIndex = 1, cells = (1..13).map { Cell("V$it") })),
+                            headerRowCount = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json.contains("\"rowNumbers\"") shouldBe false
+        json.contains("\"rowAnchors\"") shouldBe false
+    }
+
     test("compact layout includes mergedRanges for merged cells") {
         val doc = ExcelDocument(
             fileName = "merge-table.xlsx",

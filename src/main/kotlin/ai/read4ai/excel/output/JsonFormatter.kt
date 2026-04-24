@@ -14,7 +14,7 @@ import tools.jackson.module.kotlin.jacksonObjectMapper
  * - [Layout.COMPACT] — 2D string arrays with a sparse merge list (default)
  * - [Layout.ROW_OBJECT] — row objects `{"row": N, "cells": [...]}` with inline merge info
  *
- * The [assist] parameter optionally embeds a short system-prompt-like
+ * The [assist] parameter optionally embeds short output guidance
  * `prompt` field at the document root and inside every sheet so the output
  * stays valid JSON while carrying its own usage instructions.
  *
@@ -98,6 +98,10 @@ class JsonFormatter @JvmOverloads constructor(
                 if (headerArtifacts.headerCells.isNotEmpty()) {
                     map["headerCells"] = headerArtifacts.headerCells
                 }
+                val rowNumbers = buildRowNumbers(element)
+                if (rowNumbers.isNotEmpty()) map["rowNumbers"] = rowNumbers
+                val rowAnchors = buildRowAnchors(element)
+                if (rowAnchors.isNotEmpty()) map["rowAnchors"] = rowAnchors
                 val padCols = element.startCol
                 map["rows"] = element.rows.map { row ->
                     val cells = row.cells.map { sanitizeMergePlaceholder(it.value) }
@@ -300,14 +304,56 @@ class JsonFormatter @JvmOverloads constructor(
         val endColLetter = columnIndexToLetter(endCol - 1)
         val startColLetter = columnIndexToLetter(startCol - 1)
 
-        return linkedMapOf(
+        val bounds = linkedMapOf<String, Any>(
             "endRow" to endRow,
             "endCol" to endCol,
             "rowCount" to rowCount,
             "colCount" to logicalColCount,
             "range" to "$startColLetter$startRow:$endColLetter$endRow",
         )
+        if (table.startCol > 0) {
+            bounds["leadingBlankColCount"] = table.startCol
+            bounds["sheetColCount"] = table.startCol + logicalColCount
+        }
+        return bounds
     }
+
+    private fun buildRowNumbers(table: Element.Table): List<Int> {
+        if (!shouldEmitRowIdentity(table)) return emptyList()
+        return table.rows.map { row -> table.startRow + row.rowIndex + 1 }
+    }
+
+    private fun buildRowAnchors(table: Element.Table): List<Map<String, Any>> {
+        if (!shouldEmitRowIdentity(table)) return emptyList()
+
+        val bodyRows = table.rows.drop(table.headerRowCount.coerceAtLeast(0))
+        if (bodyRows.isEmpty()) return emptyList()
+
+        return bodyRows.mapNotNull { row ->
+            row.cells.withIndex().firstNotNullOfOrNull { (colIdx, cell) ->
+                val label = sanitizeMergePlaceholder(cell.value).trim()
+                if (label.isBlank()) return@firstNotNullOfOrNull null
+
+                linkedMapOf(
+                    "row" to (table.startRow + row.rowIndex + 1),
+                    "cell" to elementCell(table.startRow + row.rowIndex, table.startCol + colIdx),
+                    "label" to label,
+                )
+            }
+        }.take(ROW_ANCHOR_LIMIT)
+    }
+
+    private fun shouldEmitRowIdentity(table: Element.Table): Boolean =
+        table.rows.size in 2..ROW_IDENTITY_MAX_ROWS && (
+            tableColumnCount(table) <= ROW_IDENTITY_SINGLE_COL_MAX ||
+                (tableColumnCount(table) <= ROW_IDENTITY_MERGED_MAX_COLS && hasVerticalMerges(table))
+            )
+
+    private fun tableColumnCount(table: Element.Table): Int =
+        table.rows.maxOfOrNull { row -> row.cells.sumOf { cell -> 1 + cell.mergedRight } } ?: 0
+
+    private fun hasVerticalMerges(table: Element.Table): Boolean =
+        table.rows.any { row -> row.cells.any { cell -> cell.mergedDown > 0 } }
 
     private fun elementCell(startRow: Int, startCol: Int): String =
         "${columnIndexToLetter(startCol)}${startRow + 1}"
@@ -399,6 +445,10 @@ class JsonFormatter @JvmOverloads constructor(
         private val mapper = jacksonObjectMapper()
 
         private val MERGE_PLACEHOLDERS = setOf("<", "^", "<^", "^<")
+        private const val ROW_IDENTITY_MAX_ROWS = 200
+        private const val ROW_IDENTITY_SINGLE_COL_MAX = 1
+        private const val ROW_IDENTITY_MERGED_MAX_COLS = 4
+        private const val ROW_ANCHOR_LIMIT = 80
 
         /**
          * Deserialize a JSON string to an [ExcelDocument].

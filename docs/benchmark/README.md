@@ -1,5 +1,7 @@
 # Benchmark
 
+Versioned benchmark reports live in this directory as `v*.md` files.
+
 ## Methodology
 
 1. Parse each fixture with every target parser
@@ -11,7 +13,8 @@
 
 ## Public features
 
-Fixture files are in [`fixtures/`](fixtures/).
+Public fixture files are in [`fixtures/`](fixtures/).
+Private fixtures are evaluated as a separate hidden holdout and are not published.
 
 Description includes structural tags used as inputs for future strategy selection:
 - **header**: `simple` (single-row header) / `multi-row-merged` (header spans multiple merged rows) / `non-header-top` (top rows are a banner or metadata, not the header)

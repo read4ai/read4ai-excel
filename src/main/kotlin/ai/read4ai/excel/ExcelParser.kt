@@ -6,8 +6,8 @@ import ai.read4ai.excel.image.DrawingCoverageCollector
 import ai.read4ai.excel.model.ExcelDocument
 import ai.read4ai.excel.model.MergeRegionInfo
 import ai.read4ai.excel.model.Sheet
-import ai.read4ai.excel.pipeline.*
-import ai.read4ai.excel.pipeline.impl.DefaultGridExtractor
+import ai.read4ai.excel.strategy.*
+import ai.read4ai.excel.strategy.impl.DefaultGridExtractor
 import ai.read4ai.excel.grid.ElementClassifier
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.apache.poi.EncryptedDocumentException
@@ -36,7 +36,7 @@ object ExcelParser {
         bytes: ByteArray,
         fileName: String? = null,
         config: ExcelConfig = ExcelConfig(),
-        pipeline: PipelineConfig = PipelineConfig(),
+        strategy: StrategyConfig = StrategyConfig(),
     ): ExcelDocument {
         if (isCsvFile(fileName)) {
             val doc = CsvParser.parse(bytes, fileName)
@@ -47,7 +47,7 @@ object ExcelParser {
 
         val imageInjector = ImageInjector(config)
 
-        val workbook: Workbook = pipeline.workbookReader.read(bytes, config)
+        val workbook: Workbook = strategy.workbookReader.read(bytes, config)
 
         return workbook.use { wb ->
             val evaluator = try {
@@ -63,7 +63,7 @@ object ExcelParser {
             val numberOfSheets = wb.numberOfSheets
 
             // Configure the grid extractor if it's the default implementation
-            val gridExtractor = pipeline.gridExtractor
+            val gridExtractor = strategy.gridExtractor
             if (gridExtractor is DefaultGridExtractor) {
                 gridExtractor.evaluator = evaluator
                 gridExtractor.dataFormatter = dataFormatter
@@ -71,7 +71,7 @@ object ExcelParser {
 
             val sheets = (0 until numberOfSheets).map { sheetIndex ->
                 val poiSheet = wb.getSheetAt(sheetIndex)
-                processSheet(poiSheet, sheetIndex, gridExtractor, imageInjector, config, pipeline)
+                processSheet(poiSheet, sheetIndex, gridExtractor, imageInjector, config, strategy)
             }
 
             val doc = ExcelDocument(
@@ -83,13 +83,13 @@ object ExcelParser {
         }
     }
 
-    /** @see parse(ByteArray, String?, ExcelConfig, PipelineConfig) */
+    /** @see parse(ByteArray, String?, ExcelConfig, StrategyConfig) */
     @JvmStatic
     @JvmOverloads
     fun parse(
         path: Path,
         config: ExcelConfig = ExcelConfig(),
-        pipeline: PipelineConfig = PipelineConfig(),
+        strategy: StrategyConfig = StrategyConfig(),
     ): ExcelDocument {
         val fileName = path.fileName?.toString()
         if (isCsvFile(fileName)) {
@@ -97,16 +97,16 @@ object ExcelParser {
             return doc.copy(language = ai.read4ai.excel.lang.LanguageDetector.detect(doc))
         }
         val bytes = Files.readAllBytes(path)
-        return parse(bytes, fileName, config, pipeline)
+        return parse(bytes, fileName, config, strategy)
     }
 
     private fun processSheet(
         poiSheet: org.apache.poi.ss.usermodel.Sheet,
         sheetIndex: Int,
-        gridExtractor: ai.read4ai.excel.pipeline.GridExtractor,
+        gridExtractor: ai.read4ai.excel.strategy.GridExtractor,
         imageInjector: ImageInjector,
         config: ExcelConfig,
-        pipeline: PipelineConfig,
+        strategy: StrategyConfig,
     ): Sheet {
         log.debug { "Processing sheet $sheetIndex: '${poiSheet.sheetName}'" }
 
@@ -138,8 +138,8 @@ object ExcelParser {
             colCount = enrichedCells.maxOfOrNull { it.size } ?: 0,
         )
 
-        // Use the pipeline-based processing path
-        val elements = processWithPipeline(enrichedGrid, gridContext, pipeline)
+        // Use the strategy-stage processing path
+        val elements = processWithStrategyStages(enrichedGrid, gridContext, strategy)
 
         // Annotate merge spans on Table cells from grid merge regions
         val annotatedElements = annotateMergeSpans(elements, enrichedGrid.mergeRegions)
@@ -166,13 +166,13 @@ object ExcelParser {
     /**
      * Post-processing: annotate [ai.read4ai.excel.model.Cell.mergedRight] and
      * [ai.read4ai.excel.model.Cell.mergedDown] on [Element.Table] cells from the grid merge regions.
-     * Works regardless of which pipeline path produced the elements.
+     * Works regardless of which processing path produced the elements.
      *
      * Cells already carrying non-zero merge info are left untouched.
      */
     private fun annotateMergeSpans(
         elements: List<ai.read4ai.excel.model.Element>,
-        gridMerges: List<ai.read4ai.excel.pipeline.MergeRegion>,
+        gridMerges: List<ai.read4ai.excel.strategy.MergeRegion>,
     ): List<ai.read4ai.excel.model.Element> {
         if (gridMerges.isEmpty()) return elements
 
@@ -223,25 +223,25 @@ object ExcelParser {
     }
 
     /**
-     * Process a grid through the pipeline steps: segment -> detect headers ->
+     * Process a grid through the strategy stages: segment -> detect headers ->
      * classify -> order blocks -> extract elements.
      */
-    private fun processWithPipeline(
+    private fun processWithStrategyStages(
         grid: Grid,
         gridContext: GridExtractionResult?,
-        pipeline: PipelineConfig,
+        strategy: StrategyConfig,
     ): List<ai.read4ai.excel.model.Element> {
         // Check if using all default implementations -- use legacy path for exact backward compat
-        if (isDefaultPipeline(pipeline) && gridContext != null) {
+        if (usesDefaultStrategy(strategy) && gridContext != null) {
             return ElementClassifier.classify(grid.cells, gridContext)
         }
 
-        // Pipeline path: segment -> header detect -> classify -> order
-        val segments = pipeline.segmenter.segment(grid)
+        // Strategy-stage path: segment -> header detect -> classify -> order
+        val segments = strategy.segmenter.segment(grid)
 
         val blocks = segments.map { segment ->
-            val headerInfo = pipeline.headerDetector.detectHeaders(segment)
-            val element = pipeline.elementClassifier.classify(segment, headerInfo)
+            val headerInfo = strategy.headerDetector.detectHeaders(segment)
+            val element = strategy.elementClassifier.classify(segment, headerInfo)
             Block(
                 segment = segment,
                 headerInfo = headerInfo,
@@ -250,7 +250,7 @@ object ExcelParser {
             )
         }
 
-        val ordered = pipeline.blockOrderer.order(blocks)
+        val ordered = strategy.blockOrderer.order(blocks)
         val elements = ordered.map { it.element }
 
         // Fallback: if no elements, create a single table from the entire grid
@@ -283,16 +283,16 @@ object ExcelParser {
     }
 
     /**
-     * Check if the pipeline uses all default implementations.
+     * Check if the strategy setup uses all default implementations.
      * When it does, we can use the legacy ElementClassifier path for exact backward compatibility.
      */
-    private fun isDefaultPipeline(pipeline: PipelineConfig): Boolean {
-        return pipeline.workbookReader is ai.read4ai.excel.pipeline.impl.PoiWorkbookReader &&
-            pipeline.gridExtractor is DefaultGridExtractor &&
-            pipeline.segmenter is ai.read4ai.excel.pipeline.impl.SimpleSegmenter &&
-            pipeline.headerDetector is ai.read4ai.excel.pipeline.impl.SingleRowHeaderDetector &&
-            pipeline.blockOrderer is ai.read4ai.excel.pipeline.impl.SequentialBlockOrderer &&
-            pipeline.elementClassifier is ai.read4ai.excel.pipeline.impl.DefaultElementClassifier
+    private fun usesDefaultStrategy(strategy: StrategyConfig): Boolean {
+        return strategy.workbookReader is ai.read4ai.excel.strategy.impl.PoiWorkbookReader &&
+            strategy.gridExtractor is DefaultGridExtractor &&
+            strategy.segmenter is ai.read4ai.excel.strategy.impl.SimpleSegmenter &&
+            strategy.headerDetector is ai.read4ai.excel.strategy.impl.SingleRowHeaderDetector &&
+            strategy.blockOrderer is ai.read4ai.excel.strategy.impl.SequentialBlockOrderer &&
+            strategy.elementClassifier is ai.read4ai.excel.strategy.impl.DefaultElementClassifier
     }
 
     private val CSV_EXTENSIONS = setOf("csv", "tsv")

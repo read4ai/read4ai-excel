@@ -3,9 +3,9 @@ package ai.read4ai.excel.output
 import ai.read4ai.excel.ExperimentalRead4ai
 
 /**
- * Whether the formatter embeds a short system-prompt-like block alongside
- * the document content so an LLM can interpret the payload without external
- * instructions.
+ * Optional formatter recipe modifier that embeds a short output guidance
+ * block alongside the document content so an LLM can interpret the payload
+ * without external instructions.
  *
  * - [NONE] (default): pure data output, no extra text.
  * - [ON]: a `prompt` field / block is added at the document root and inside
