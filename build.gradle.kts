@@ -12,7 +12,7 @@ val jacksonVersion: String by project
 val kotestVersion: String by project
 
 group = "io.github.hyune-c"
-version = "0.3.1"
+version = "0.3.2"
 
 java {
     toolchain {

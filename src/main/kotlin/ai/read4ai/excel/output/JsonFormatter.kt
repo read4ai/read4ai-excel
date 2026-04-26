@@ -63,12 +63,15 @@ class JsonFormatter @JvmOverloads constructor(
         if (assist == Assist.ON) {
             map["prompt"] = PromptText.sheetJsonCompact(sheet)
         }
-        map["elements"] = sheet.elements.map { compactElement(it) }
+        map["elements"] = compactElements(sheet.elements)
         if (sheet.mergeRegions.isNotEmpty()) {
             map["mergeRegions"] = sheet.mergeRegions.map { formatMergeRange(it) }
         }
         return map
     }
+
+    private fun compactElements(elements: List<Element>): List<Map<String, Any>> =
+        elementsWithSections(elements) { element -> compactElement(element) }
 
     private fun compactElement(element: Element): Map<String, Any> {
         return when (element) {
@@ -86,7 +89,7 @@ class JsonFormatter @JvmOverloads constructor(
                     map["columnPaths"] = element.columnPaths
                         .mapValues { (_, path) -> cleanHeaderPath(path) }
                         .filterValues { it.isNotEmpty() }
-                        .mapKeys { (k, _) -> k.toString() }
+                        .mapKeys { (k, _) -> (element.startCol + k + 1).toString() }
                 }
                 if (element.rowPaths.isNotEmpty()) {
                     map["rowPaths"] = element.rowPaths.mapKeys { (k, _) -> k.toString() }
@@ -97,6 +100,18 @@ class JsonFormatter @JvmOverloads constructor(
                 }
                 if (headerArtifacts.headerCells.isNotEmpty()) {
                     map["headerCells"] = headerArtifacts.headerCells
+                }
+                val columns = buildColumnMetadata(element, headerArtifacts)
+                if (columns.isNotEmpty()) {
+                    map["columns"] = columns
+                }
+                val matrixRows = buildMatrixRows(element, headerArtifacts)
+                if (matrixRows.isNotEmpty()) {
+                    map["matrixRows"] = matrixRows
+                }
+                val matrixTransitions = buildMatrixTransitions(matrixRows)
+                if (matrixTransitions.isNotEmpty()) {
+                    map["matrixTransitions"] = matrixTransitions
                 }
                 val rowNumbers = buildRowNumbers(element)
                 if (rowNumbers.isNotEmpty()) map["rowNumbers"] = rowNumbers
@@ -169,12 +184,15 @@ class JsonFormatter @JvmOverloads constructor(
         if (assist == Assist.ON) {
             map["prompt"] = PromptText.sheetJsonRowObject(sheet)
         }
-        map["elements"] = sheet.elements.map { rowObjectElement(it) }
+        map["elements"] = rowObjectElements(sheet.elements)
         if (sheet.mergeRegions.isNotEmpty()) {
             map["mergeRegions"] = sheet.mergeRegions.map { formatMergeRange(it) }
         }
         return map
     }
+
+    private fun rowObjectElements(elements: List<Element>): List<Map<String, Any>> =
+        elementsWithSections(elements) { element -> rowObjectElement(element) }
 
     private fun rowObjectElement(element: Element): Map<String, Any> {
         return when (element) {
@@ -194,6 +212,18 @@ class JsonFormatter @JvmOverloads constructor(
                 }
                 if (headerArtifacts.headerCells.isNotEmpty()) {
                     map["headerCells"] = headerArtifacts.headerCells
+                }
+                val columns = buildColumnMetadata(element, headerArtifacts)
+                if (columns.isNotEmpty()) {
+                    map["columns"] = columns
+                }
+                val matrixRows = buildMatrixRows(element, headerArtifacts)
+                if (matrixRows.isNotEmpty()) {
+                    map["matrixRows"] = matrixRows
+                }
+                val matrixTransitions = buildMatrixTransitions(matrixRows)
+                if (matrixTransitions.isNotEmpty()) {
+                    map["matrixTransitions"] = matrixTransitions
                 }
                 val mergedRanges = buildMergedRanges(element)
                 if (mergedRanges.isNotEmpty()) map["mergedRanges"] = mergedRanges
@@ -252,6 +282,55 @@ class JsonFormatter @JvmOverloads constructor(
     // ------------------------------------------------------------------
     // Shared helpers
     // ------------------------------------------------------------------
+
+    private fun elementsWithSections(
+        elements: List<Element>,
+        formatElement: (Element) -> Map<String, Any>,
+    ): List<Map<String, Any>> {
+        var currentSection: SectionRef? = null
+        return elements.map { element ->
+            val formatted = formatElement(element).toMutableMap()
+            if (element is Element.Table) {
+                tableSection(currentSection, element)?.let { section ->
+                    formatted["section"] = section
+                    val sectionHeaderCells = buildSectionHeaderCells(section, formatted["columns"])
+                    if (sectionHeaderCells.isNotEmpty()) {
+                        formatted["sectionHeaderCells"] = sectionHeaderCells
+                    }
+                }
+            }
+            sectionRef(element)?.let { currentSection = it }
+            formatted
+        }
+    }
+
+    private fun tableSection(section: SectionRef?, table: Element.Table): Map<String, Any>? {
+        section ?: return null
+        if (section.startRow >= table.startRow) return null
+        if (table.startRow - section.startRow > SECTION_MAX_ROW_GAP) return null
+        return linkedMapOf(
+            "text" to section.text,
+            "cell" to elementCell(section.startRow, section.startCol),
+        )
+    }
+
+    private fun sectionRef(element: Element): SectionRef? =
+        when (element) {
+            is Element.Heading -> SectionRef(element.text, element.startRow, element.startCol)
+            else -> null
+        }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun buildSectionHeaderCells(section: Map<String, Any>, columns: Any?): Map<String, String> {
+        val sectionText = section["text"] as? String ?: return emptyMap()
+        val columnEntries = columns as? List<Map<String, Any>> ?: return emptyMap()
+        if (columnEntries.size > SECTION_HEADER_CELLS_MAX_COLUMNS) return emptyMap()
+        return columnEntries.mapNotNull { column ->
+            val header = column["header"] as? String ?: return@mapNotNull null
+            val headerCell = column["headerCell"] as? String ?: return@mapNotNull null
+            "$sectionText > $header" to headerCell
+        }.toMap()
+    }
 
     private fun buildMergeList(table: Element.Table): List<Map<String, Any>> {
         val merges = mutableListOf<Map<String, Any>>()
@@ -418,6 +497,125 @@ class JsonFormatter @JvmOverloads constructor(
         return HeaderArtifacts(resolved, headerCells)
     }
 
+    private fun buildColumnMetadata(
+        table: Element.Table,
+        headerArtifacts: HeaderArtifacts,
+    ): List<Map<String, Any>> {
+        if (!shouldEmitColumnMetadata(table, headerArtifacts)) return emptyList()
+
+        return headerArtifacts.resolvedHeaders.mapNotNull { (key, header) ->
+            val index = key.toIntOrNull() ?: return@mapNotNull null
+            val entry = linkedMapOf<String, Any>(
+                "index" to index,
+                "letter" to columnIndexToLetter(index - 1),
+                "header" to header,
+            )
+            headerArtifacts.headerCells[key]?.let { entry["headerCell"] = it }
+            entry
+        }
+    }
+
+    private fun shouldEmitColumnMetadata(
+        table: Element.Table,
+        headerArtifacts: HeaderArtifacts,
+    ): Boolean {
+        if (headerArtifacts.resolvedHeaders.isEmpty()) return false
+        return table.startCol > 0 || table.headerRowCount > 1 || tableColumnCount(table) > COLUMN_METADATA_WIDE_MIN_COLS
+    }
+
+    private fun buildMatrixRows(
+        table: Element.Table,
+        headerArtifacts: HeaderArtifacts,
+    ): List<Map<String, Any>> {
+        if (table.headerRowCount <= 0) return emptyList()
+        if (headerArtifacts.resolvedHeaders.isEmpty()) return emptyList()
+
+        val bodyRows = table.rows.drop(table.headerRowCount)
+        if (bodyRows.size < MATRIX_MIN_BODY_ROWS) return emptyList()
+
+        val maxCols = table.rows.maxOfOrNull { it.cells.size } ?: return emptyList()
+        val matrixCols = (0 until maxCols).filter { col ->
+            val values = bodyRows.mapNotNull { row ->
+                row.cells.getOrNull(col)?.value
+                    ?.let(::sanitizeMergePlaceholder)
+                    ?.trim()
+                    ?.takeIf(String::isNotBlank)
+            }
+            values.size >= MATRIX_MIN_COLUMN_VALUES && values.all(::isMatrixValue)
+        }
+        if (matrixCols.size < MATRIX_MIN_VALUE_COLUMNS) return emptyList()
+
+        val firstMatrixCol = matrixCols.first()
+        return bodyRows.mapNotNull { row ->
+            val keyParts = row.cells.take(firstMatrixCol)
+                .map { sanitizeMergePlaceholder(it.value).trim() }
+                .filter(String::isNotBlank)
+                .distinct()
+            if (keyParts.isEmpty()) return@mapNotNull null
+
+            val values = linkedMapOf<String, String>()
+            for (col in matrixCols) {
+                val value = row.cells.getOrNull(col)
+                    ?.value
+                    ?.let(::sanitizeMergePlaceholder)
+                    ?.trim()
+                    ?.takeIf(::isMatrixValue)
+                    ?: continue
+                val absCol = table.startCol + col + 1
+                val header = headerArtifacts.resolvedHeaders[absCol.toString()] ?: continue
+                values[header] = value
+            }
+            if (values.isEmpty()) return@mapNotNull null
+
+            val groups = values.entries
+                .groupBy({ it.value }, { it.key })
+                .toSortedMap()
+            linkedMapOf<String, Any>(
+                "row" to (table.startRow + row.rowIndex + 1),
+                "key" to keyParts.joinToString(" / "),
+                "values" to values,
+            ).also { entry ->
+                if (groups.isNotEmpty()) entry["groups"] = groups
+            }
+        }.take(MATRIX_ROW_LIMIT)
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun buildMatrixTransitions(matrixRows: List<Map<String, Any>>): List<Map<String, Any>> {
+        if (matrixRows.size < 2) return emptyList()
+
+        return matrixRows.zipWithNext().mapNotNull { (from, to) ->
+            val fromValues = from["values"] as? Map<String, String> ?: return@mapNotNull null
+            val toValues = to["values"] as? Map<String, String> ?: return@mapNotNull null
+
+            val keys = fromValues.keys.filter { it in toValues }
+            val changes = linkedMapOf<String, List<String>>()
+            for (fromValue in MATRIX_VALUES) {
+                for (toValue in MATRIX_VALUES) {
+                    if (fromValue == toValue) continue
+                    val changed = keys.filter { key ->
+                        fromValues[key]?.uppercase() == fromValue && toValues[key]?.uppercase() == toValue
+                    }
+                    if (changed.isNotEmpty()) {
+                        changes["$fromValue->$toValue"] = changed
+                    }
+                }
+            }
+            if (changes.isEmpty()) return@mapNotNull null
+
+            linkedMapOf(
+                "fromRow" to (from["row"] as Any),
+                "fromKey" to (from["key"] as Any),
+                "toRow" to (to["row"] as Any),
+                "toKey" to (to["key"] as Any),
+                "changes" to changes,
+            )
+        }.take(MATRIX_TRANSITION_LIMIT)
+    }
+
+    private fun isMatrixValue(value: String): Boolean =
+        value.uppercase() in MATRIX_VALUES
+
     private fun cleanHeaderPath(path: List<String>): List<String> =
         path.map(::sanitizeMergePlaceholder)
             .map(String::trim)
@@ -441,14 +639,29 @@ class JsonFormatter @JvmOverloads constructor(
         val headerCells: Map<String, String>,
     )
 
+    private data class SectionRef(
+        val text: String,
+        val startRow: Int,
+        val startCol: Int,
+    )
+
     companion object {
         private val mapper = jacksonObjectMapper()
 
         private val MERGE_PLACEHOLDERS = setOf("<", "^", "<^", "^<")
+        private const val SECTION_MAX_ROW_GAP = 5
+        private const val SECTION_HEADER_CELLS_MAX_COLUMNS = 80
         private const val ROW_IDENTITY_MAX_ROWS = 200
         private const val ROW_IDENTITY_SINGLE_COL_MAX = 1
         private const val ROW_IDENTITY_MERGED_MAX_COLS = 4
         private const val ROW_ANCHOR_LIMIT = 80
+        private const val COLUMN_METADATA_WIDE_MIN_COLS = 12
+        private const val MATRIX_MIN_BODY_ROWS = 2
+        private const val MATRIX_MIN_COLUMN_VALUES = 2
+        private const val MATRIX_MIN_VALUE_COLUMNS = 3
+        private const val MATRIX_ROW_LIMIT = 80
+        private const val MATRIX_TRANSITION_LIMIT = 80
+        private val MATRIX_VALUES = setOf("O", "X", "Y", "N", "YES", "NO", "TRUE", "FALSE", "○", "×", "✓")
 
         /**
          * Deserialize a JSON string to an [ExcelDocument].

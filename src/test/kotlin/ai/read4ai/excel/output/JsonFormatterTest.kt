@@ -63,6 +63,71 @@ class JsonFormatterTest : FunSpec({
         json shouldContain "\"cells\""
     }
 
+    test("compact layout attaches nearby heading as table section") {
+        val doc = ExcelDocument(
+            fileName = "sections.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Sections",
+                    elements = listOf(
+                        Element.Heading(text = "TV 지원 어플", startRow = 4, startCol = 1),
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Platform"), Cell("YouTube"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("Web OS"), Cell("O"))),
+                            ),
+                            headerRowCount = 1,
+                            startRow = 6,
+                            startCol = 1,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"section\""
+        json shouldContain "\"text\" : \"TV 지원 어플\""
+        json shouldContain "\"cell\" : \"B5\""
+        json shouldContain "\"sectionHeaderCells\""
+        json shouldContain "\"TV 지원 어플 > Platform\" : \"B7\""
+        json shouldContain "\"TV 지원 어플 > YouTube\" : \"C7\""
+    }
+
+    test("compact layout omits sectionHeaderCells for very wide sectioned tables") {
+        val headers = (1..81).map { Cell("H$it") }
+        val values = (1..81).map { Cell("V$it") }
+        val doc = ExcelDocument(
+            fileName = "wide-section.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Wide",
+                    elements = listOf(
+                        Element.Heading(text = "Large section", startRow = 0, startCol = 0),
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = headers),
+                                Row(rowIndex = 1, cells = values),
+                            ),
+                            headerRowCount = 1,
+                            startRow = 1,
+                            startCol = 0,
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"section\""
+        json shouldContain "\"columns\""
+        json.contains("\"sectionHeaderCells\"") shouldBe false
+    }
+
     test("compact layout includes resolvedHeaders for multi-row tables") {
         val doc = ExcelDocument(
             fileName = "headers.xlsx",
@@ -132,16 +197,156 @@ class JsonFormatterTest : FunSpec({
 
         val json = JsonFormatter().format(doc)
         json shouldContain "\"columnPaths\""
-        json shouldContain "\"1\" : [ \"Netflix\" ]"
-        json shouldContain "\"2\" : [ \"Wavve\" ]"
+        json shouldContain "\"2\" : [ \"Netflix\" ]"
+        json shouldContain "\"3\" : [ \"Wavve\" ]"
         json shouldContain "\"2\" : \"Netflix\""
         json shouldContain "\"3\" : \"Wavve\""
         json.contains("< > Netflix") shouldBe false
     }
 
+    test("compact layout uses absolute sheet columns for columnPaths on offset tables") {
+        val doc = ExcelDocument(
+            fileName = "offset-paths.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Offset",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Platform"), Cell("모델"), Cell("Apps", mergedRight = 1), Cell("<"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("^"), Cell("^"), Cell("YouTube"), Cell("Netflix"))),
+                                Row(rowIndex = 2, cells = listOf(Cell("Web OS"), Cell("UT"), Cell("O"), Cell("X"))),
+                            ),
+                            headerRowCount = 2,
+                            startCol = 1,
+                            columnPaths = mapOf(
+                                2 to listOf("Apps", "YouTube"),
+                                3 to listOf("Apps", "Netflix"),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"columnPaths\""
+        json shouldContain "\"4\" : [ \"Apps\", \"YouTube\" ]"
+        json shouldContain "\"5\" : [ \"Apps\", \"Netflix\" ]"
+        json shouldContain "\"4\" : \"Apps > YouTube\""
+        json shouldContain "\"5\" : \"Apps > Netflix\""
+        json shouldContain "\"4\" : \"D2\""
+        json shouldContain "\"5\" : \"E2\""
+    }
+
+    test("compact layout includes column metadata for offset and multi-row tables") {
+        val doc = ExcelDocument(
+            fileName = "column-metadata.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Columns",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Platform"), Cell("모델"), Cell("Apps", mergedRight = 1), Cell("<"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("^"), Cell("^"), Cell("YouTube"), Cell("Netflix"))),
+                                Row(rowIndex = 2, cells = listOf(Cell("Web OS"), Cell("UT"), Cell("O"), Cell("X"))),
+                            ),
+                            headerRowCount = 2,
+                            startCol = 1,
+                            columnPaths = mapOf(
+                                2 to listOf("Apps", "YouTube"),
+                                3 to listOf("Apps", "Netflix"),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"columns\""
+        json shouldContain "\"index\" : 4"
+        json shouldContain "\"letter\" : \"D\""
+        json shouldContain "\"header\" : \"Apps > YouTube\""
+        json shouldContain "\"headerCell\" : \"D2\""
+        json shouldContain "\"index\" : 5"
+        json shouldContain "\"letter\" : \"E\""
+        json shouldContain "\"header\" : \"Apps > Netflix\""
+        json shouldContain "\"headerCell\" : \"E2\""
+    }
+
+    test("compact layout includes matrixRows for wide binary support matrices") {
+        val doc = ExcelDocument(
+            fileName = "support-matrix.xlsx",
+            numberOfSheets = 1,
+            sheets = listOf(
+                Sheet(
+                    sheetIndex = 0,
+                    sheetName = "Support",
+                    elements = listOf(
+                        Element.Table(
+                            rows = listOf(
+                                Row(rowIndex = 0, cells = listOf(Cell("Platform"), Cell("Model"), Cell("Apps", mergedRight = 2), Cell("<"), Cell("<"))),
+                                Row(rowIndex = 1, cells = listOf(Cell("^"), Cell("^"), Cell("YouTube"), Cell("Netflix"), Cell("TikTok"))),
+                                Row(rowIndex = 2, cells = listOf(Cell("Web OS 23"), Cell("UR"), Cell("O"), Cell("O"), Cell("O"))),
+                                Row(rowIndex = 3, cells = listOf(Cell("Web OS 24"), Cell("UT"), Cell("O"), Cell("X"), Cell("X"))),
+                            ),
+                            headerRowCount = 2,
+                            startCol = 1,
+                            columnPaths = mapOf(
+                                2 to listOf("Apps", "YouTube"),
+                                3 to listOf("Apps", "Netflix"),
+                                4 to listOf("Apps", "TikTok"),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
+        )
+
+        val json = JsonFormatter().format(doc)
+        json shouldContain "\"matrixRows\""
+        json shouldContain "\"row\" : 3"
+        json shouldContain "\"key\" : \"Web OS 23 / UR\""
+        json shouldContain "\"Apps > YouTube\" : \"O\""
+        json shouldContain "\"Apps > Netflix\" : \"O\""
+        json shouldContain "\"Apps > TikTok\" : \"O\""
+        json shouldContain "\"row\" : 4"
+        json shouldContain "\"key\" : \"Web OS 24 / UT\""
+        json shouldContain "\"Apps > Netflix\" : \"X\""
+        json shouldContain "\"Apps > TikTok\" : \"X\""
+        json shouldContain "\"groups\""
+        json shouldContain "\"O\" : [ \"Apps > YouTube\" ]"
+        json shouldContain "\"X\" : [ \"Apps > Netflix\", \"Apps > TikTok\" ]"
+        json shouldContain "\"matrixTransitions\""
+        json shouldContain "\"fromKey\" : \"Web OS 23 / UR\""
+        json shouldContain "\"toKey\" : \"Web OS 24 / UT\""
+        json shouldContain "\"O->X\" : [ \"Apps > Netflix\", \"Apps > TikTok\" ]"
+    }
+
     test("compact layout omits prompt for simple single-header sheets") {
         val json = JsonFormatter().format(sampleDocument())
         json.contains("\"prompt\"") shouldBe false
+    }
+
+    test("compact layout omits column metadata for simple narrow tables") {
+        val json = JsonFormatter().format(sampleDocument())
+        json.contains("\"columns\"") shouldBe false
+    }
+
+    test("compact layout omits matrixRows for simple narrow tables") {
+        val json = JsonFormatter().format(sampleDocument())
+        json.contains("\"matrixRows\"") shouldBe false
+    }
+
+    test("compact layout omits matrixTransitions for simple narrow tables") {
+        val json = JsonFormatter().format(sampleDocument())
+        json.contains("\"matrixTransitions\"") shouldBe false
     }
 
     test("compact layout includes cell coordinates for headings and text") {

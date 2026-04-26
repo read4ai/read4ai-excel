@@ -2,6 +2,13 @@
 
 ## v0 — Foundation (experimental)
 
+### v0.3.2 — Support matrix grounding
+
+- Compact JSON adds structured support-matrix projections for wide O/X-style tables
+- Adjacent matrix row transitions expose changed headers without domain-specific rules
+- Sectioned tables connect nearby headings to header cell coordinates for repeated-header sheets
+- This is the last planned v0 release before the v1.0.0 stabilization push
+
 ### v0.3.0 — Strategy naming + default uplift
 
 - Breaking terminology/API rename: `pipeline` -> `strategy`, `PipelineConfig` -> `StrategyConfig`

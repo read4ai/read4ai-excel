@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.3-blue.svg)](https://kotlinlang.org)
 [![Java](https://img.shields.io/badge/Java-17%2B-green.svg)](docs/guide.md)
-[![Latest Maven Central](https://img.shields.io/badge/Latest%20Maven%20Central-v0.3.1-2ea44f.svg)](https://central.sonatype.com/artifact/io.github.hyune-c/read4ai-excel/0.3.1)
+[![Latest Maven Central](https://img.shields.io/badge/Latest%20Maven%20Central-v0.3.2-2ea44f.svg)](https://central.sonatype.com/artifact/io.github.hyune-c/read4ai-excel/0.3.2)
 [![Demo](https://img.shields.io/badge/demo-Hugging%20Face-ffcc4d.svg)](https://huggingface.co/spaces/read4ai/read4ai)
 <br>
 [![GitHub](https://img.shields.io/badge/GitHub-Hyune--c-181717?logo=github)](https://github.com/Hyune-c)

@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    implementation("io.github.hyune-c:read4ai-excel:0.3.1")
+    implementation("io.github.hyune-c:read4ai-excel:0.3.2")
 }
 ```
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'io.github.hyune-c:read4ai-excel:0.3.1'
+    implementation 'io.github.hyune-c:read4ai-excel:0.3.2'
 }
 ```
 
@@ -32,7 +32,7 @@ dependencies {
 <dependency>
   <groupId>io.github.hyune-c</groupId>
   <artifactId>read4ai-excel</artifactId>
-  <version>0.3.1</version>
+  <version>0.3.2</version>
 </dependency>
 ```
 
